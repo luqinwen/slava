@@ -1,2 +1,2 @@
-# redis-Golang
-rebuild redis in Golang
+# Slava 🎩
+A High-performance、K-V Database.
