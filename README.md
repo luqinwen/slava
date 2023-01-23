@@ -7,20 +7,23 @@ A High-performance、K-V Cloud Database.
 3. [小林coding](https://xiaolincoding.com/redis/)
 4. [极客时间: Redis核心技术与实战](https://time.geekbang.org/column/intro/100056701)
 5. [7-days http server](https://geektutu.com/post/gee-day1.html)
+6. [代码规范](https://bbs.huaweicloud.com/blogs/291830)
 
 ## PR规范
-1. commit message 必须以todo编号: message 的样式做记录
-分支type：
-feature - 新功能 feature
-fix - 修复 bug
-docs - 文档注释
-style - 代码格式(不影响代码运行的变动)
-refactor - 重构、优化(既不增加新功能，也不是修复bug)
-perf - 性能优化
-test - 增加测试
-chore - 构建过程或辅助工具的变动
-revert - 回退
-build - 打包
+1. commit message 必须以todo编号: message 的样式做记录<br>
+
+>分支type：<br>
+>
+>feature - 新功能 feature<br>
+>fix - 修复 bug<br>
+>docs - 文档注释<br>
+>style - 代码格式(不影响代码运行的变动)<br>
+>refactor - 重构、优化(既不增加新功能，也不是修复bug)<br>
+>perf - 性能优化<br>
+>test - 增加测试<br>
+>chore - 构建过程或辅助工具的变动<br>
+>revert - 回退<br>
+>build - 打包<br>
 
 2. todo编号的命名规则是：分支type/版本号-***（三位数的编号），eg: feature:0-001
 3. 多个commit需要squash后再进行提交
@@ -55,8 +58,18 @@ build - 打包
 | Todo codes   | Issues |Contributors|
 | :----- | :-----  |:-----|
 | docs:0-001|  1. Readme update  | [Qinwen](https://github.com/luqinwen)|
-| feature:0-002|  1. TCP simple server | 
-| feature:0-003|1. Well developed tcp server|
-|feature:0-004|1. Echo handler|
+| ......|  ...... | ......|
+| feature:0-019|  1. LRU 2. LFU ||
+| feature:0-020|1. Geohash|| 
+|feature:0-021|1. Clusters<br>2. Consistent Hashing||
+|feature:0-022|1. TCC||
+|feature:0-023|1. TTL||
 
 ### V1（Docker+K8S/Cloud K-V Database）
+| Todo codes   | Issues |Contributors|
+| :----- | :-----  |:-----|
+| docs: 1-001|  1. Readme update  | [Qinwen](https://github.com/luqinwen)|
+| chore:1-002|  1. Docker compose | |
+| feature:1-003|  1. Generate Make file  | |
+| feature:1-004|  1. CI\CD | |
+| refactor:1-005| 1. Go 1.17——>1.19 | |
