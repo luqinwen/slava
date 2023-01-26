@@ -72,3 +72,4 @@ A High-performance、K-V Cloud Database.
 | chore:1-002|  1. Docker compose | |
 | feature:1-003|  1. Generate Make file  | |
 | feature:1-004|  1. CI\CD | |
+| refactor:1-005| 1. Go 1.17——>1.19 | |
