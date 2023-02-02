@@ -123,6 +123,7 @@ A High-performance、K-V Cloud Database.
 > 2. xxx
 > 3. xxx
 6. 提交分支 feature/v0、test/v0（不要提交到main分支，由我来做最后的合并）
+   ![pr merge requirement](./docs/image/pr.png)
 7. 提交pr后需要拉一个1-1的会与我对齐你的进度以及讲解你的代码同时进行code review
 
 ## 关于提交 PR 的方法：
