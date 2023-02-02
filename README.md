@@ -33,25 +33,25 @@ A High-performance、K-V Cloud Database.
    if the importing code is outside the tree rooted at the parent of the
    "internal" directory.
    ```
-可以通过 Go 语言本身的机制来约束其他项目 import 项目内部的包。/internal 目录建议包含如下目录：
-- /internal/apiserver：该目录中存放真实的应用代码。这些应用的共享代码存放在/internal/pkg 目录下。
-- /internal/pkg：存放项目内可共享，项目外不共享的包。这些包提供了比较基础、通用的功能，例如工具、错误码、用户验证等功能。
-  Tips：一开始将所有的共享代码存放在 /internal/pkg 目录下，当该共享代码做好了对外开发的准备后，再转存到/pkg目录下
-  /internal 目录大概分为 3 类子目录：
-- /internal/pkg：内部共享包存放的目录。
-- /internal/authzserver、/internal/apiserver、/internal/pump、/internal/iamctl：应用目录，里面包含应用程序的实现代码。
-- /internal/iamctl：对于一些大型项目，可能还会需要一个客户端工具。
+   可以通过 Go 语言本身的机制来约束其他项目 import 项目内部的包。/internal 目录建议包含如下目录：
+   - /internal/apiserver：该目录中存放真实的应用代码。这些应用的共享代码存放在/internal/pkg 目录下。
+   - /internal/pkg：存放项目内可共享，项目外不共享的包。这些包提供了比较基础、通用的功能，例如工具、错误码、用户验证等功能。
+     Tips：一开始将所有的共享代码存放在 /internal/pkg 目录下，当该共享代码做好了对外开发的准备后，再转存到/pkg目录下
+     /internal 目录大概分为 3 类子目录：
+   - /internal/pkg：内部共享包存放的目录。
+   - /internal/authzserver、/internal/apiserver、/internal/pump、/internal/iamctl：应用目录，里面包含应用程序的实现代码。
+   - /internal/iamctl：对于一些大型项目，可能还会需要一个客户端工具。
 
-在每个应用程序内部，也会有一些目录结构，这些目录结构主要根据功能来划分：
-- /internal/apiserver/api/v1：HTTP API 接口的具体实现，主要用来做 HTTP 请求的解包、参数校验、业务逻辑处理、返回。注意这里的业务逻辑处理应该是轻量级的，如果业务逻辑比较复杂，代码量比较多，建议放到
-- /internal/apiserver/service 目录下。该源码文件主要用来串流程。
-- /internal/apiserver/options：应用的 command flag。
-- /internal/apiserver/config：根据命令行参数创建应用配置。
-- /internal/apiserver/service：存放应用复杂业务处理代码。/internal/apiserver/store/mysql：一个应用可能要持久化的存储一些数据，这里主要存放跟数据库交互的代码，比如 Create、Update、Delete、Get、List 等。
+   在每个应用程序内部，也会有一些目录结构，这些目录结构主要根据功能来划分：
+   - /internal/apiserver/api/v1：HTTP API 接口的具体实现，主要用来做 HTTP 请求的解包、参数校验、业务逻辑处理、返回。注意这里的业务逻辑处理应该是轻量级的，如果业务逻辑比较复杂，代码量比较多，建议放到
+   - /internal/apiserver/service 目录下。该源码文件主要用来串流程。
+   - /internal/apiserver/options：应用的 command flag。
+   - /internal/apiserver/config：根据命令行参数创建应用配置。
+   - /internal/apiserver/service：存放应用复杂业务处理代码。/internal/apiserver/store/mysql：一个应用可能要持久化的存储一些数据，这里主要存放跟数据库交互的代码，比如 Create、Update、Delete、Get、List 等。
 
-/internal/pkg 目录存放项目内可共享的包，通常可以包含如下目录：
-- /internal/pkg/code：项目业务 Code 码。
-- /internal/pkg/validation：一些通用的验证函数。/internal/pkg/middleware：HTTP 处理链。
+   /internal/pkg 目录存放项目内可共享的包，通常可以包含如下目录：
+   - /internal/pkg/code：项目业务 Code 码。
+   - /internal/pkg/validation：一些通用的验证函数。/internal/pkg/middleware：HTTP 处理链。
 
 4. /pkg<br>
    /pkg 目录是 Go 语言项目中非常常见的目录，我们几乎能够在所有知名的开源项目（非框架）中找到它的身影，例如 Kubernetes、Prometheus、Moby、Knative 等。该目录中存放可以被外部应用使用的代码库，其他项目可以直接通过 import 导入这里的代码。所以，我们在将代码库放入该目录时一定要慎重。
