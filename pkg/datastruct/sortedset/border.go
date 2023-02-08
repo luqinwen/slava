@@ -6,7 +6,7 @@ import (
 )
 
 /*
- * ScoreBorder is a struct represents `min` `max` parameter of redis command `ZRANGEBYSCORE`
+ * ScoreBorder is a struct represents `min` `max` parameter of slava command `ZRANGEBYSCORE`
  * can accept:
  *   int or float value, such as 2.718, 2, -2.718, -2 ...
  *   exclusive int or float value, such as (2.718, (2, (-2.718, (-2 ...
@@ -60,7 +60,7 @@ var negativeInfBorder = &ScoreBorder{
 	Inf: negativeInf,
 }
 
-// ParseScoreBorder creates ScoreBorder from redis arguments
+// ParseScoreBorder creates ScoreBorder from slava arguments
 func ParseScoreBorder(s string) (*ScoreBorder, error) {
 	if s == "inf" || s == "+inf" {
 		return positiveInfBorder, nil
