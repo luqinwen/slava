@@ -20,14 +20,14 @@ type Payload struct {
 	Err  error
 }
 
-// ParseStream reads data from io.Reader and send payloads through channel
+// ParseStream reads constData from io.Reader and send payloads through channel
 func ParseStream(reader io.Reader) <-chan *Payload {
 	ch := make(chan *Payload)
 	go parse0(reader, ch)
 	return ch
 }
 
-// ParseBytes reads data from []byte and return all replies
+// ParseBytes reads constData from []byte and return all replies
 func ParseBytes(data []byte) ([]slava.Reply, error) {
 	ch := make(chan *Payload)
 	reader := bytes.NewReader(data)
@@ -48,7 +48,7 @@ func ParseBytes(data []byte) ([]slava.Reply, error) {
 	return results, nil
 }
 
-// ParseOne reads data from []byte and return the first payload
+// ParseOne reads constData from []byte and return the first payload
 func ParseOne(data []byte) (slava.Reply, error) {
 	ch := make(chan *Payload)
 	reader := bytes.NewReader(data)

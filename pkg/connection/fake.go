@@ -23,7 +23,7 @@ func NewFakeConn() *FakeConn {
 	return c
 }
 
-// Write writes data to buffer
+// Write writes constData to buffer
 func (c *FakeConn) Write(b []byte) (int, error) {
 	if c.closed {
 		return 0, io.EOF
@@ -49,7 +49,7 @@ func (c *FakeConn) notify() {
 
 func (c *FakeConn) wait(offset int) {
 	c.mu.Lock()
-	if c.offset != offset { // new data during waiting lock
+	if c.offset != offset { // new constData during waiting lock
 		return
 	}
 	if c.waitOn == nil {
@@ -62,7 +62,7 @@ func (c *FakeConn) wait(offset int) {
 	logger.Debug(fmt.Sprintf("wait on %p finish", waitOn))
 }
 
-// Read reads data from buffer
+// Read reads constData from buffer
 func (c *FakeConn) Read(p []byte) (int, error) {
 	c.mu.Lock()
 	n := copy(p, c.buf[c.offset:])
@@ -95,7 +95,7 @@ func (c *FakeConn) Clean() {
 	c.offset = 0
 }
 
-// Bytes returns written data
+// Bytes returns written constData
 func (c *FakeConn) Bytes() []byte {
 	return c.buf
 }

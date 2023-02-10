@@ -44,7 +44,7 @@ func TestParseStream(t *testing.T) {
 			return
 		}
 		if payload.Data == nil {
-			t.Error("empty data")
+			t.Error("empty constData")
 			return
 		}
 		exp := expected[i]

@@ -21,7 +21,7 @@ const (
 type Connection struct {
 	conn net.Conn
 
-	// wait until finish sending data, used for graceful shutdown
+	// wait until finish sending constData, used for graceful shutdown
 	sendingData wait.Wait
 
 	// lock while server sending response
@@ -159,7 +159,7 @@ func (c *Connection) InMultiState() bool {
 
 // SetMultiState sets transaction flag
 func (c *Connection) SetMultiState(state bool) {
-	if !state { // reset data when cancel multi
+	if !state { // reset constData when cancel multi
 		c.watching = nil
 		c.queue = nil
 		c.flags &= ^flagMulti // clean multi flag

@@ -27,7 +27,7 @@ type DBEngine interface {
 	GetDBSize(dbIndex int) (int, int)
 }
 
-// DataEntity stores data bound to a key, including a string, list, hash, set and so on
+// DataEntity stores constData bound to a key, including a string, list, hash, set and so on
 type DataEntity struct {
 	Data interface{}
 }
