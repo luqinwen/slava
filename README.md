@@ -128,7 +128,7 @@ A High-performance、K-V Cloud Database.
 
 ## 关于提交 PR 的方法：
 ### Step1:
-首先你需要 fork 本仓库到你自己的 github 仓库，点击右上角的 fork 按钮。
+首先你需要 fork 本仓库到你自己的 github 仓库，点击右上角的 fork 按钮（**切忌只fork main分支！**）。
 ### Step2:
 使用 git clone 命令将本仓库拷贝到你的本地文件，git clone 地址请点开项目上方的绿色 "code" 按钮查看。
 ### Step3:
