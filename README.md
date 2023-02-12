@@ -8,6 +8,9 @@ A High-performance、K-V Cloud Database.
 4. [极客时间: Redis核心技术与实战](https://time.geekbang.org/column/intro/100056701)
 5. [7-days http server](https://geektutu.com/post/gee-day1.html)
 6. [代码规范](https://bbs.huaweicloud.com/blogs/291830)
+7. [Google 开源项目风格：格式 ‒ Google 开源项目风格指南](https://zh-google-styleguide.readthedocs.io/en/latest/google-cpp-styleguide/formatting/)
+8. [Jenkins:创建您的第一个Pipeline](https://www.jenkins.io/zh/doc/pipeline/tour/hello-world/)
+9. [Jenkins for go](https://plugins.jenkins.io/golang/)
 
 ## 目录结构设计
 1. /web<br>
@@ -100,7 +103,7 @@ A High-performance、K-V Cloud Database.
 ## PR规范
 1. commit message 必须以todo编号: message 的样式做记录<br>
 
->分支type：<br>
+>**分支type：<br>**
 >
 >feature - 新功能 feature<br>
 >fix - 修复 bug<br>
@@ -116,6 +119,15 @@ A High-performance、K-V Cloud Database.
 2. todo编号的命名规则是：分支type/版本号-***（三位数的编号），eg: feature:0-001
 3. 多个commit需要squash后再进行提交
 4. 合并分支commit和rebase结合使用
+>使用 rebase 和 merge 的基本原则：
+>
+>- 下游分支更新上游分支内容的时候使用 rebase
+>- 上游分支合并下游分支内容的时候使用 merge
+>- 更新当前分支的内容时一定要使用 --rebase 参数
+>
+>例如现有上游分支 master，基于 master 分支拉出来一个开发分支 dev，在 dev 上开发了一段时间后要把 master 分支提交的新内容更新到 dev 分支，此时切换到 dev 分支，使用 git rebase >master
+>
+>等 dev 分支开发完成了之后，要合并到上游分支 master 上的时候，切换到 master 分支，使用 git merge dev
 5. Commit 信息规范：
 > 0-002:summary
 >
@@ -124,7 +136,8 @@ A High-performance、K-V Cloud Database.
 > 3. xxx
 6. 提交分支 feature/v0、test/v0（不要提交到main分支，由我来做最后的合并）
    ![pr merge requirement](./docs/image/pr.png)
-7. 提交pr后需要拉一个1-1的会与我对齐你的进度以及讲解你的代码同时进行code review
+7. 提交pr后需要拉一个1-1的会与我对齐你的进度以及讲解你的代码同时进行code review，同时需要提交一份你的测试报告（**包括pr概述、测试用例、测试结果截图**）。
+   [测试报告模板](https://gbvsqqoj6n.feishu.cn/docx/CoiNdwYb4orlxYxHtCBcK64EnLf)
 
 ## 关于提交 PR 的方法：
 ### Step1:
