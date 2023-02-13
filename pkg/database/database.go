@@ -12,6 +12,8 @@ import (
 	"slava/pkg/logger"
 	"slava/pkg/timewheel"
 
+	"slava/pkg/lib/timewheel"
+
 	. "slava/internal/constData"
 )
 
@@ -31,7 +33,7 @@ type DB struct {
 	// dict.Dict将确保其方法的并发安全
 	// 仅对复杂的命令使用该互斥锁，如，rpush，incr,msetnx...
 	locker *lock.Locks
-	addAof func(Cmdline)
+	AddAof func(Cmdline)
 }
 
 // redis命令的执行函数
@@ -61,7 +63,7 @@ func makeDB() *DB {
 		ttlMap:     dict.MakeConcurrent(TtlDictSize),
 		versionMap: dict.MakeConcurrent(DataDictSize),
 		locker:     lock.Make(LockerSize),
-		addAof:     func(line Cmdline) {},
+		AddAof:     func(line Cmdline) {},
 	}
 	return db
 }
@@ -286,4 +288,16 @@ func (db *DB) ForEach(cb func(key string, data *database.DataEntity, expiration 
 		}
 		return cb(key, entity, expiration)
 	})
+}
+
+func (db *DB) GetAsString(key string) ([]byte, protocol.ErrorReply) {
+	entity, exists := db.GetEntity(key)
+	if !exists {
+		return nil, nil
+	}
+	bytes, ok := entity.Data.([]byte)
+	if !ok {
+		return nil, &protocol.WrongTypeErrReply{}
+	}
+	return bytes, nil
 }
