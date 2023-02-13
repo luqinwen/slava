@@ -2,17 +2,17 @@ package database
 
 import "slava/internal/utils"
 
-func readFirstKey(args [][]byte) ([]string, []string) {
+func ReadFirstKey(args [][]byte) ([]string, []string) {
 	key := string(args[0])
 	return nil, []string{key}
 }
 
-func writeFirstKey(args [][]byte) ([]string, []string) {
+func WriteFirstKey(args [][]byte) ([]string, []string) {
 	key := string(args[0])
 	return []string{key}, nil
 }
 
-func readAllKeys(args [][]byte) ([]string, []string) {
+func ReadAllKeys(args [][]byte) ([]string, []string) {
 	keys := make([]string, len(args))
 	for i := 0; i < len(args); i++ {
 		keys[i] = string(args[i])
@@ -24,12 +24,12 @@ func readAllKeys(args [][]byte) ([]string, []string) {
 //	return nil, nil
 //}
 
-func rollbackFirstKey(db *DB, args [][]byte) []Cmdline {
+func RollbackFirstKey(db *DB, args [][]byte) []Cmdline {
 	key := string(args[0])
-	return rollbackGivenKeys(db, key)
+	return RollbackGivenKeys(db, key)
 }
 
-func rollbackGivenKeys(db *DB, keys ...string) []Cmdline {
+func RollbackGivenKeys(db *DB, keys ...string) []Cmdline {
 	var undoCmdLine [][][]byte
 	for _, key := range keys {
 		_, ok := db.GetEntity(key)
