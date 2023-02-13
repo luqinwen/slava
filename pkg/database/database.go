@@ -7,10 +7,10 @@ import (
 	"slava/internal/interface/database"
 	"slava/internal/interface/slava"
 	"slava/internal/protocol"
-	"slava/lib/timewheel"
 	"slava/pkg/datastruct/dict"
 	"slava/pkg/datastruct/lock"
 	"slava/pkg/logger"
+	"slava/pkg/timewheel"
 
 	. "slava/internal/constData"
 )
