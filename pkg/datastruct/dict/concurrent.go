@@ -7,7 +7,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	. "slava/internal/constdata"
+	. "slava/internal/data"
 )
 
 // 实现dict接口

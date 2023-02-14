@@ -3,7 +3,7 @@ package database
 import (
 	"strings"
 
-	. "slava/internal/constData"
+	. "slava/internal/data"
 )
 
 var cmdTable = make(map[string]*command)

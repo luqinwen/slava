@@ -3,32 +3,13 @@ package main
 import (
 	"fmt"
 	"os"
-	"slava/internal/slava/server"
 
 	"slava/config"
+	. "slava/internal/data"
+	"slava/internal/slava/server"
 	"slava/internal/tcp"
 	"slava/pkg/logger"
 )
-
-var banner = `
-          ██                             
-         ░██                             
-  ██████ ░██  ██████   ██    ██  ██████  
- ██░░░░  ░██ ░░░░░░██ ░██   ░██ ░░░░░░██ 
-░░█████  ░██  ███████ ░░██ ░██   ███████ 
- ░░░░░██ ░██ ██░░░░██  ░░████   ██░░░░██ 
- ██████  ███░░████████  ░░██   ░░████████
-░░░░░░  ░░░  ░░░░░░░░    ░░     ░░░░░░░░ 
-
-`
-
-var defaultProperties = &config.ServerProperties{
-	Bind:           "0.0.0.0",
-	Port:           6399,
-	AppendOnly:     false,
-	AppendFilename: "",
-	MaxClients:     1000,
-}
 
 func fileExists(filename string) bool {
 	info, err := os.Stat(filename)
@@ -36,7 +17,7 @@ func fileExists(filename string) bool {
 }
 
 func main() {
-	print(banner)
+	print(Banner)
 	logger.Setup(&logger.Settings{
 		Path:       "logs",
 		Name:       "slava",
@@ -48,7 +29,7 @@ func main() {
 		if fileExists("slava.conf") {
 			config.SetupConfig("slava.conf")
 		} else {
-			config.Properties = defaultProperties
+			config.Properties = DefaultProperties
 		}
 	} else {
 		config.SetupConfig(configFilename)
