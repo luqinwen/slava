@@ -12,9 +12,7 @@ import (
 	"slava/pkg/logger"
 	"slava/pkg/timewheel"
 
-	"slava/pkg/lib/timewheel"
-
-	. "slava/internal/constData"
+	. "slava/internal/data"
 )
 
 // 分数据库的功能，redis含有16个分数据库

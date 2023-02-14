@@ -1,4 +1,4 @@
-package constdata
+package data
 
 // 这个包用来存放项目的常数
 

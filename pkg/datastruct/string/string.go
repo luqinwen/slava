@@ -15,7 +15,7 @@ import (
 	"slava/internal/utils"
 	"slava/pkg/datastruct/bitmap"
 
-	. "slava/internal/constData"
+	. "slava/internal/data"
 
 	"github.com/shopspring/decimal"
 )
