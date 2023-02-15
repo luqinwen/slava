@@ -155,10 +155,10 @@ func execGetEX(db *db.DB, args [][]byte) slava.Reply {
 // PX millisecond ：设置键的过期时间为 millisecond 毫秒。 SET key value PX millisecond 效果等同于 PSETEX key millisecond value
 // NX ：只在键不存在时，才对键进行设置操作。 SET key value NX 效果等同于 SETNX key value
 // XX ：只在键已经存在时，才对键进行设置操作。
-
-// 后面跟的EX、PX、NX、XX只能是其中一个
-
 // 对于某个原本带有生存时间（TTL）的键来说， 当 SET 命令成功在这个键上执行时， 这个键原有的 TTL 将被清除。
+
+// NX或者XX可以和EX或者PX组合使用 SET key value EX 10 NX
+// EX 和 PX 可以同时出现，但后面给出的选项会覆盖前面给出的选项
 
 func execSet(db *db.DB, args [][]byte) slava.Reply {
 	key := string(args[0])
@@ -180,9 +180,9 @@ func execSet(db *db.DB, args [][]byte) slava.Reply {
 				}
 				policy = UpdatePolicy
 			} else if arg == "EX" {
-				if ttl != UnlimitedTTl { // 表明再遍历中已经遇到过一个EX或者PX命令，现在又遇到一个，所以报错
-					return &protocol.SyntaxErrReply{}
-				}
+				//if ttl != UnlimitedTTl { // 表明再遍历中已经遇到过一个EX或者PX命令，现在又遇到一个，所以报错
+				//	return &protocol.SyntaxErrReply{}
+				//}
 				if i+1 >= len(arg) {
 					return &protocol.SyntaxErrReply{}
 				}
@@ -193,9 +193,9 @@ func execSet(db *db.DB, args [][]byte) slava.Reply {
 				ttl = tllArg * 1000
 				i++ // 跳过失效的时间
 			} else if arg == "PX" {
-				if ttl != UnlimitedTTl {
-					return &protocol.SyntaxErrReply{}
-				}
+				//if ttl != UnlimitedTTl {
+				//	return &protocol.SyntaxErrReply{}
+				//}
 				if i+1 >= len(arg) {
 					return &protocol.SyntaxErrReply{}
 				}
@@ -213,49 +213,28 @@ func execSet(db *db.DB, args [][]byte) slava.Reply {
 	entity := &database.DataEntity{Data: value}
 	result := 0
 	switch policy {
-	case UpsertPolicy: // 默认值，说明后面跟的不是EX和XX
+	case UpsertPolicy: // 默认值，说明后面跟的不是NX和XX
 		db.PutEntity(key, entity) // 执行了普通的set，可能后面会跟EX或PX，要进行判断一下
-		// 就算上面db.PutEntity(key, entity)返回的结果是0，也要对后面对EX和PX的判断
-		if ttl != UnlimitedTTl { // 说明后面跟了EX或者PX
-			expireTime := time.Now().Add(time.Duration(ttl) * time.Millisecond)
-			db.Expire(key, expireTime)
-			// AOF
-			// TODO
-		}
-	case InsertPolicy: // NX,如果不存在则插入
+		result = 1
+	case InsertPolicy: // NX,如果不存在则插入,后面可能还会跟EX或者PX字段，后序需要判断
 		result = db.PutIfAbsent(key, entity)
-
-		if result == 1 { // 表明已经进行了操作
-			// AOF
-			db.AddAof(utils.ToCmdLine3("set", args...))
-		}
 	case UpdatePolicy: // XX,存在则操作
 		result = db.PutIfExists(key, entity)
-		if result == 1 { // 表明对现有的key进行了修改
-			db.Persist(key) // 对于某个原本带有生存时间（TTL）的键来说， 当 SET 命令成功在这个键上执行时， 这个键原有的 TTL 将被清除。
+	}
+
+	if result > 0 {
+		if ttl != UnlimitedTTl {
+			expireTime := time.Now().Add(time.Duration(ttl) * time.Millisecond)
+			db.Expire(key, expireTime)
+			// TODO
+			// AOF
+		} else { // NX|XX
 			// 在Persist中会判断key是不是在ttMap中
+			db.Persist(key) // 对于某个原本带有生存时间（TTL）的键来说， 当 SET 命令成功在这个键上执行时， 这个键原有的 TTL 将被清除。
 			// AOF操作
 			db.AddAof(utils.ToCmdLine3("set", args...))
 		}
-		//db.Persist(key) // 由于Persist里面会判断key存不存在于ttlMap中，所以这里不用在判断
 	}
-
-	//if result > 0 {
-	//	if ttl != unlimitedTTl {
-	//		expireTime := time.Now().Add(time.Duration(ttl) * time.Millisecond)
-	//		db.Expire(key, expireTime)
-	//		db.addAof(Cmdline{
-	//			[]byte("SET"),
-	//			args[0],
-	//			args[1],
-	//		})
-	//		db.addAof(aof.MakeExpireCmd(key, expireTime).Args)
-	//	} else {
-	//		db.Persist(key) // override ttl
-	//		db.addAof(utils.ToCmdLine3("set", args...))
-	//	}
-	//}
-
 	if result > 0 {
 		return &protocol.OkReply{}
 	}
