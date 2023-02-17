@@ -16,10 +16,10 @@ type command struct {
 	flags    int // 指示该只读还是写函数
 }
 
-//const (
-//	flagWrite = iota
-//	flagReadOnly
-//)
+const (
+	flagWrite = iota
+	flagReadOnly
+)
 
 // 注册函数
 // 将命令注册到对应的cmdTable中
