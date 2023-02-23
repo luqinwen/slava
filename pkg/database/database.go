@@ -15,7 +15,7 @@ import (
 	. "slava/internal/data"
 )
 
-// 分数据库的功能，redis含有16个分数据库
+// 分数据库的功能，slava含有16个分数据库
 
 //const (
 //	dataDictSize = 1 << 16 // 表示的是分数据库的大小
@@ -31,7 +31,7 @@ type DB struct {
 	// dict.Dict将确保其方法的并发安全
 	// 仅对复杂的命令使用该互斥锁，如，rpush，incr,msetnx...
 	locker *lock.Locks
-	AddAof func(Cmdline)
+	addAof func(Cmdline)
 }
 
 // redis命令的执行函数
@@ -40,7 +40,8 @@ type DB struct {
 type ExecFunc func(db *DB, args [][]byte) slava.Reply
 
 // CmdLine表示命令行
-
+// TODO cmd统一
+type CmdLine = [][]byte
 type Cmdline = [][]byte
 
 // PreFun 将在”multi“命令中使用，返回相关的写键和读键
@@ -54,6 +55,9 @@ type PreFunc func(args [][]byte) ([]string, []string)
 type UndoFunc func(db *DB, args [][]byte) []Cmdline
 
 // 初始化DB
+func MakeDB() *DB {
+	return makeDB()
+}
 
 func makeDB() *DB {
 	db := &DB{
@@ -61,7 +65,7 @@ func makeDB() *DB {
 		ttlMap:     dict.MakeConcurrent(TtlDictSize),
 		versionMap: dict.MakeConcurrent(DataDictSize),
 		locker:     lock.Make(LockerSize),
-		AddAof:     func(line Cmdline) {},
+		addAof:     func(line Cmdline) {},
 	}
 	return db
 }
@@ -160,7 +164,6 @@ func (db *DB) addVersion(keys ...string) {
 }
 
 // TTL的函数
-
 func genExpireTask(key string) string {
 	return "expire:" + key
 }
@@ -196,7 +199,6 @@ func (db *DB) Persist(key string) {
 }
 
 // 判断一个键值是否过期
-
 func (db *DB) IsExpired(key string) bool {
 	//db.locker.Lock(key)
 	//defer db.locker.UnLock(key)
@@ -213,7 +215,6 @@ func (db *DB) IsExpired(key string) bool {
 }
 
 // 实现分数据库对数据的操作
-
 func (db *DB) GetEntity(key string) (*database.DataEntity, bool) {
 	raw, exists := db.data.Get(key)
 	if !exists {
@@ -227,25 +228,21 @@ func (db *DB) GetEntity(key string) (*database.DataEntity, bool) {
 }
 
 // 在分数据库中加入一个key value
-
 func (db *DB) PutEntity(key string, entity *database.DataEntity) int {
 	return db.data.Put(key, entity)
 }
 
 // 如果存在则修改，返回1，如果不存在返回0
-
 func (db *DB) PutIfAbsent(key string, entity *database.DataEntity) int {
 	return db.data.PutIfAbsent(key, entity)
 }
 
 // 如果不存在的时候加入，返回1，否则返回0
-
 func (db *DB) PutIfExists(key string, entity *database.DataEntity) int {
 	return db.data.PutIfExists(key, entity)
 }
 
 // 从数据库中移除给定的key
-
 func (db *DB) Remove(key string) {
 	db.data.Remove(key)
 	db.ttlMap.Remove(key)
@@ -268,7 +265,6 @@ func (db *DB) Removes(keys ...string) int {
 }
 
 // Flush清空数据库
-
 func (db *DB) Flush() {
 	makeDB()
 }
@@ -298,4 +294,16 @@ func (db *DB) GetAsString(key string) ([]byte, protocol.ErrorReply) {
 		return nil, &protocol.WrongTypeErrReply{}
 	}
 	return bytes, nil
+}
+
+/* ---- Lock Function ----- */
+
+// RWLocks lock keys for writing and reading
+func (db *DB) RWLocks(writeKeys []string, readKeys []string) {
+	db.locker.RWLocks(writeKeys, readKeys)
+}
+
+// RWUnLocks unlock keys for writing and reading
+func (db *DB) RWUnLocks(writeKeys []string, readKeys []string) {
+	db.locker.RWUnLocks(writeKeys, readKeys)
 }
