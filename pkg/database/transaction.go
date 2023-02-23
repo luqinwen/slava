@@ -157,3 +157,17 @@ func EnqueueCmd(conn slava.Connection, cmdLine [][]byte) slava.Reply {
 	conn.EnqueueCmd(cmdLine)
 	return protocol.MakeQueuedReply()
 }
+
+// GetRelatedKeys analysis related keys
+func GetRelatedKeys(cmdLine [][]byte) ([]string, []string) {
+	cmdName := strings.ToLower(string(cmdLine[0]))
+	cmd, ok := cmdTable[cmdName]
+	if !ok {
+		return nil, nil
+	}
+	prepare := cmd.prepare
+	if prepare == nil {
+		return nil, nil
+	}
+	return prepare(cmdLine[1:])
+}
