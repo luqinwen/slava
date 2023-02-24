@@ -17,6 +17,16 @@ type List struct {
 	len  int
 }
 
+/*
+List的操作
+	Len()
+	RPush(value)
+	LPush(value)
+	LPop()
+	GetByIndex(index)
+	Range(start, stop)
+*/
+
 func NewListNode(value string) (listNode *ListNode) {
 	listNode = &ListNode{
 		value: value,
@@ -75,6 +85,22 @@ func (list *List) LPush(value string) {
 	}
 
 	list.len++
+}
+
+func (list *List) RPop() (node *ListNode) {
+	if list.len == 0 {
+		return
+	}
+	node = list.tail
+	if node.pre == nil {
+		list.head = nil
+		list.tail = nil
+	} else {
+		list.tail = node.pre
+	}
+
+	list.len--
+	return
 }
 
 func (list *List) LPop() (node *ListNode) {
