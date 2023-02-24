@@ -7,7 +7,7 @@ import (
 	"slava/internal/interface/database"
 	"slava/internal/protocol"
 	"slava/pkg/datastruct/dict"
-	"slava/pkg/datastruct/list"
+	"slava/pkg/datastruct/quicklist"
 	SortedSet "slava/pkg/datastruct/sortedset"
 )
 
@@ -20,7 +20,7 @@ func EntityToCmd(key string, entity *database.DataEntity) *protocol.MultiBulkRep
 	switch val := entity.Data.(type) {
 	case []byte:
 		cmd = stringToCmd(key, val)
-	case list.List:
+	case quicklist.List:
 		cmd = listToCmd(key, val)
 	//	Todo set
 	//case *set.Set:
@@ -45,7 +45,7 @@ func stringToCmd(key string, bytes []byte) *protocol.MultiBulkReply {
 
 var rPushAllCmd = []byte("RPUSH")
 
-func listToCmd(key string, list list.List) *protocol.MultiBulkReply {
+func listToCmd(key string, list quicklist.List) *protocol.MultiBulkReply {
 	args := make([][]byte, 2+list.Len())
 	args[0] = rPushAllCmd
 	args[1] = []byte(key)

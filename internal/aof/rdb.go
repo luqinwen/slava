@@ -3,15 +3,17 @@ package aof
 import (
 	"io/ioutil"
 	"os"
+	"strconv"
+	"time"
 
+	"github.com/hdt3213/godis/aof"
+	"github.com/hdt3213/godis/datastruct/set"
+	"github.com/hdt3213/rdb/model"
 	"slava/config"
 	"slava/internal/interface/database"
 	"slava/pkg/datastruct/dict"
 	SortedSet "slava/pkg/datastruct/sortedset"
 	"slava/pkg/logger"
-	"slava/pkg/rdb/model"
-	"strconv"
-	"time"
 )
 
 // todo: forbid concurrent rewrite
@@ -40,7 +42,7 @@ func (persister *Persister) Rewrite2RDB(rdbFilename string) error {
 // Rewrite2RDBForReplication asynchronously rewrite aof data into rdb and returns a channel to receive following data
 // parameter listener would receive following updates of rdb
 // parameter hook allows you to do something during aof pausing
-func (persister Persister) Rewrite2RDBForReplication(rdbFilename string, listener aof.Listener, hook func()) error {
+func (persister Persister) Rewrite2RDBForReplication(rdbFilename string, listener Listener, hook func()) error {
 	ctx, err := persister.startRewrite2RDB(listener, hook)
 	if err != nil {
 		return err
@@ -60,7 +62,7 @@ func (persister Persister) Rewrite2RDBForReplication(rdbFilename string, listene
 	return nil
 }
 
-func (persister *Persister) startRewrite2RDB(newListener aof.Listener, hook func()) (*aof.RewriteCtx, error) {
+func (persister *Persister) startRewrite2RDB(newListener Listener, hook func()) (*aof.RewriteCtx, error) {
 	persister.pausingAof.Lock() // pausing aof
 	defer persister.pausingAof.Unlock()
 
