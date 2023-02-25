@@ -1,18 +1,19 @@
 /*
  * @Author: libowei
  * @Date: 2023-02-21 23:24:20
- * @LastEditTime: 2023-02-24 16:21:09
+ * @LastEditTime: 2023-02-25 11:21:23
  * @FilePath: \slava\pkg\database\list.go
  */
 package database
 
 import (
+	"strconv"
+
 	"slava/internal/interface/database"
 	"slava/internal/interface/slava"
 	"slava/internal/protocol"
 	"slava/internal/utils"
 	"slava/pkg/datastruct/list"
-	"strconv"
 )
 
 func (db *DB) getAsList(key string) (*list.List, protocol.ErrorReply) {
@@ -85,7 +86,7 @@ func execListRPush(db *DB, args [][]byte) slava.Reply {
 		list.RPush(string(value))
 	}
 
-	db.AddAof(utils.ToCmdLine3("rpush", args...))
+	db.addAof(utils.ToCmdLine3("rpush", args...))
 	return protocol.MakeIntReply(int64(list.Len()))
 }
 
@@ -116,7 +117,7 @@ func execListLPush(db *DB, args [][]byte) slava.Reply {
 		list.LPush(string(value))
 	}
 
-	db.AddAof(utils.ToCmdLine3("lpush", args...))
+	db.addAof(utils.ToCmdLine3("lpush", args...))
 	return protocol.MakeIntReply(int64(list.Len()))
 }
 
@@ -145,7 +146,7 @@ func execListRpop(db *DB, args [][]byte) slava.Reply {
 
 	node := list.RPop()
 
-	db.AddAof(utils.ToCmdLine3("rpop", args...))
+	db.addAof(utils.ToCmdLine3("rpop", args...))
 	return protocol.MakeBulkReply([]byte(node.GetValue()))
 }
 
@@ -163,7 +164,7 @@ func execListLpop(db *DB, args [][]byte) slava.Reply {
 
 	node := list.LPop()
 
-	db.AddAof(utils.ToCmdLine3("lpop", args...))
+	db.addAof(utils.ToCmdLine3("lpop", args...))
 	return protocol.MakeBulkReply([]byte(node.GetValue()))
 }
 
