@@ -1,17 +1,18 @@
 package database
 
 import (
-	"slava/internal/aof"
-	"slava/pkg/datastruct/list"
 	"strconv"
 	"strings"
 	"time"
 
+	"slava/internal/aof"
 	"slava/internal/interface/slava"
 	"slava/internal/protocol"
 	"slava/internal/utils"
 	"slava/pkg/datastruct/dict"
+	"slava/pkg/datastruct/list"
 	"slava/pkg/datastruct/sortedset"
+	"slava/pkg/wildcard"
 )
 
 // execDel removes a key from db
@@ -23,7 +24,7 @@ func execDel(db *DB, args [][]byte) slava.Reply {
 
 	deleted := db.Removes(keys...)
 	if deleted > 0 {
-		db.addAof(utils.ToCmdLine3("del", args...))
+		db.AddAof(utils.ToCmdLine3("del", args...))
 	}
 	return protocol.MakeIntReply(int64(deleted))
 }
@@ -53,7 +54,7 @@ func execExists(db *DB, args [][]byte) slava.Reply {
 // deprecated, use Server.flushDB
 func execFlushDB(db *DB, args [][]byte) slava.Reply {
 	db.Flush()
-	db.addAof(utils.ToCmdLine3("flushdb", args...))
+	db.AddAof(utils.ToCmdLine3("flushdb", args...))
 	return &protocol.OkReply{}
 }
 
@@ -107,7 +108,7 @@ func execRename(db *DB, args [][]byte) slava.Reply {
 		expireTime, _ := rawTTL.(time.Time)
 		db.Expire(dest, expireTime)
 	}
-	db.addAof(utils.ToCmdLine3("rename", args...))
+	db.AddAof(utils.ToCmdLine3("rename", args...))
 	return &protocol.OkReply{}
 }
 
@@ -140,7 +141,7 @@ func execRenameNx(db *DB, args [][]byte) slava.Reply {
 		expireTime, _ := rawTTL.(time.Time)
 		db.Expire(dest, expireTime)
 	}
-	db.addAof(utils.ToCmdLine3("renamenx", args...))
+	db.AddAof(utils.ToCmdLine3("renamenx", args...))
 	return protocol.MakeIntReply(1)
 }
 
@@ -161,7 +162,7 @@ func execExpire(db *DB, args [][]byte) slava.Reply {
 
 	expireAt := time.Now().Add(ttl)
 	db.Expire(key, expireAt)
-	db.addAof(aof.MakeExpireCmd(key, expireAt).Args)
+	db.AddAof(aof.MakeExpireCmd(key, expireAt).Args)
 	return protocol.MakeIntReply(1)
 }
 
@@ -181,7 +182,7 @@ func execExpireAt(db *DB, args [][]byte) slava.Reply {
 	}
 
 	db.Expire(key, expireAt)
-	db.addAof(aof.MakeExpireCmd(key, expireAt).Args)
+	db.AddAof(aof.MakeExpireCmd(key, expireAt).Args)
 	return protocol.MakeIntReply(1)
 }
 
@@ -202,7 +203,7 @@ func execPExpire(db *DB, args [][]byte) slava.Reply {
 
 	expireAt := time.Now().Add(ttl)
 	db.Expire(key, expireAt)
-	db.addAof(aof.MakeExpireCmd(key, expireAt).Args)
+	db.AddAof(aof.MakeExpireCmd(key, expireAt).Args)
 	return protocol.MakeIntReply(1)
 }
 
@@ -223,7 +224,7 @@ func execPExpireAt(db *DB, args [][]byte) slava.Reply {
 
 	db.Expire(key, expireAt)
 
-	db.addAof(aof.MakeExpireCmd(key, expireAt).Args)
+	db.AddAof(aof.MakeExpireCmd(key, expireAt).Args)
 	return protocol.MakeIntReply(1)
 }
 
@@ -275,7 +276,7 @@ func execPersist(db *DB, args [][]byte) slava.Reply {
 	}
 
 	db.Persist(key)
-	db.addAof(utils.ToCmdLine3("persist", args...))
+	db.AddAof(utils.ToCmdLine3("persist", args...))
 	return protocol.MakeIntReply(1)
 }
 

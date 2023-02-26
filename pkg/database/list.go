@@ -80,7 +80,7 @@ func execListRPush(db *DB, args [][]byte) slava.Reply {
 		list.RPush(string(value))
 	}
 
-	db.addAof(utils.ToCmdLine3("rpush", args...))
+	db.AddAof(utils.ToCmdLine3("rpush", args...))
 	return protocol.MakeIntReply(int64(list.Len()))
 }
 
@@ -111,7 +111,7 @@ func execListLPush(db *DB, args [][]byte) slava.Reply {
 		list.LPush(string(value))
 	}
 
-	db.addAof(utils.ToCmdLine3("lpush", args...))
+	db.AddAof(utils.ToCmdLine3("lpush", args...))
 	return protocol.MakeIntReply(int64(list.Len()))
 }
 
@@ -140,7 +140,7 @@ func execListRpop(db *DB, args [][]byte) slava.Reply {
 
 	node := list.RPop()
 
-	db.addAof(utils.ToCmdLine3("rpop", args...))
+	db.AddAof(utils.ToCmdLine3("rpop", args...))
 	return protocol.MakeBulkReply([]byte(node.GetValue()))
 }
 
@@ -158,7 +158,7 @@ func execListLpop(db *DB, args [][]byte) slava.Reply {
 
 	node := list.LPop()
 
-	db.addAof(utils.ToCmdLine3("lpop", args...))
+	db.AddAof(utils.ToCmdLine3("lpop", args...))
 	return protocol.MakeBulkReply([]byte(node.GetValue()))
 }
 
