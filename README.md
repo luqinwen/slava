@@ -1,31 +1,15 @@
 # Slava 🎩
 A High-performance、K-V Cloud Database.
 
-## Reference Urls：
-1. [github地址](https://github.com/luqinwen/slava)
-2. [git操作参考](https://www.runoob.com/git/git-tutorial.html)
-3. [小林coding](https://xiaolincoding.com/redis/)
-4. [极客时间: Redis核心技术与实战](https://time.geekbang.org/column/intro/100056701)
-5. [7-days http server](https://geektutu.com/post/gee-day1.html)
-6. [代码规范](https://bbs.huaweicloud.com/blogs/291830)
-7. [Google 开源项目风格：格式 ‒ Google 开源项目风格指南](https://zh-google-styleguide.readthedocs.io/en/latest/google-cpp-styleguide/formatting/)
-8. [Jenkins:创建您的第一个Pipeline](https://www.jenkins.io/zh/doc/pipeline/tour/hello-world/)
-9. [Jenkins for go](https://plugins.jenkins.io/golang/)
+
 
 ## 目录结构设计
 1. /web<br>
-   前端代码存放目录，主要用来存放 Web 静态资源，服务端模板和单页应用（SPAs）。
+   前端代码存放目录，主要用来存放 Web 静态资源，服务端模板和单页应用（SPAs）。后期考虑会实现slava的可视化页面。
 
 
 2. /cmd<br>
 一个项目有很多组件，可以把组件 main 函数所在的文件夹统一放在/cmd 目录下，例如：
-    ```
-    $ ls cmd/
-    gendocs  geniamdocs  genman  genswaggertypedocs  genyaml  iam-apiserver  iam-authz-server  iamctl  iam-pump
-   
-    $ ls cmd/iam-apiserver/
-    apiserver.go
-    ```
     每个组件的目录名应该跟你期望的可执行文件名是一致的。这里要保证 /cmd/<组件名> 目录下不要存放太多的代码，如果你认为代码可以导入并在其他项目中使用，那么它应该位于 /pkg 目录中。如果代码不是可重用的，或者你不希望其他人重用它，请将该代码放到 /internal 目录中。
 
 
@@ -69,13 +53,7 @@ A High-performance、K-V Cloud Database.
 
 
 7. /configs<br>
-   这个目录用来配置文件模板或默认配置。例如，可以在这里存放 confd 或 consul-template 模板文件。这里有一点要注意，配置中不能携带敏感信息，这些敏感信息，我们可以用占位符来替代，例如：
-   ```
-   apiVersion: v1    
-   user:    
-   username: ${CONFIG_USER_USERNAME} # iam 用户名    
-   password: ${CONFIG_USER_PASSWORD} # iam 密码
-   ```
+   这个目录用来配置文件模板或默认配置。
 
 
 8. /deployment<br>
@@ -154,8 +132,8 @@ A High-performance、K-V Cloud Database.
 记得检查修改自己的 GitHub Public profile 里的 Name 和 Public email，位置在右上角头像的 Settings 里，因为大多数情况下我们会使用 squash merge 来合并 PRs，此时 squash merge 后产生的新提交作者信息会使用这个 GH 信息。
 
 ## Todo
-### [开发看板](https://gbvsqqoj6n.feishu.cn/docx/VtzXdoU7coNdLLxtHnmc9MkGnxf)
-### V0（计划开发周期1.9～3.6）
+### [slava开发看板](https://gbvsqqoj6n.feishu.cn/docx/VtzXdoU7coNdLLxtHnmc9MkGnxf)
+### V0（计划开发周期1.9～3.27）
 
 | Todo codes   | Issues |Contributors|
 | :----- | :-----  |:-----|
@@ -166,6 +144,10 @@ A High-performance、K-V Cloud Database.
 |feature:0-021|1. Clusters<br>2. Consistent Hashing||
 |feature:0-022|1. TCC||
 |feature:0-023|1. TTL||
+| ......|  ...... | ......|
+|feature:0-036|1. Quicklist||
+|feature:0-037|1. Linkedlist||
+
 
 ### V1（Docker+K8S/Cloud K-V Database）
 | Todo codes   | Issues |Contributors|
@@ -174,4 +156,24 @@ A High-performance、K-V Cloud Database.
 | chore:1-002|  1. Docker compose | |
 | feature:1-003|  1. Generate Make file  | |
 | feature:1-004|  1. CI\CD | |
-| refactor:1-005| 1. Go 1.17——>1.19 | |
+| refactor:1-005| 1. Go 1.17——>1.20 | |
+
+## Reference Urls：
+1. [github地址](https://github.com/luqinwen/slava)
+2. [git操作参考](https://www.runoob.com/git/git-tutorial.html)
+3. [小林coding](https://xiaolincoding.com/redis/)
+4. [极客时间: Redis核心技术与实战](https://time.geekbang.org/column/intro/100056701)
+5. [7-days http server](https://geektutu.com/post/gee-day1.html)
+6. [代码规范](https://bbs.huaweicloud.com/blogs/291830)
+7. [Google 开源项目风格：格式 ‒ Google 开源项目风格指南](https://zh-google-styleguide.readthedocs.io/en/latest/google-cpp-styleguide/formatting/)
+8. [Jenkins:创建您的第一个Pipeline](https://www.jenkins.io/zh/doc/pipeline/tour/hello-world/)
+9. [Jenkins for go](https://plugins.jenkins.io/golang/)
+10. [google云原生应用构建指南](https://cloud.google.com/resources/rearchitecting-to-cloud-native?hl=zh-cn)
+11. Go 程序员面试笔试宝典
+12. [GraphSQL](https://mp.weixin.qq.com/s/777ys6Pavip9rmnQ145OQw)
+13. [gRPC 官方文档中文版_V1.0](https://doc.oschina.net/grpc?t=60133)
+14. [Linux Shell命令](https://plantegg.github.io/2017/01/01/top_linux_commands/)
+15. [常用的命令行技巧](https://iaguozhi.github.io/blogs/shell-command-tips.html)
+16. [Ginkgo](https://www.ginkgo.wiki/gong-xiang-shi-li-mo-shi.html)
+17. [testing - 单元测试 · Go语言标准库](https://books.studygolang.com/The-Golang-Standard-Library-by-Example/chapter09/09.1.html)
+18. [后端 - Redis从入门到高可用，分布式实践](https://www.aliyundrive.com/s/tAB72ggpbqF)
