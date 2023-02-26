@@ -1,7 +1,7 @@
 /*
  * @Author: libowei
  * @Date: 2023-02-20 23:02:08
- * @LastEditTime: 2023-02-20 23:18:09
+ * @LastEditTime: 2023-02-25 14:52:38
  * @FilePath: \slava\pkg\datastruct\list\list_test.go
  */
 package list
@@ -9,8 +9,6 @@ package list
 import (
 	"fmt"
 	"reflect"
-
-	// "reflect"
 	"testing"
 )
 
@@ -51,6 +49,44 @@ func TestLpush(t *testing.T) {
 
 	if reflect.DeepEqual(printNode(list.Range(0, 2)), []string{"c", "b", "a"}) != true {
 		t.Errorf("LPush %s wrong\n", "c,b,a")
+	}
+}
+
+func TestRpop(t *testing.T) {
+	list := NewList()
+	list.RPush("a")
+	list.RPush("b")
+	list.RPush("c")
+
+	fmt.Printf("want [a b c]  is %s\n", printNode(list.Range(0, 2)))
+
+	list.RPop()
+	fmt.Printf("want [a b]  is %s\n", printNode(list.Range(0, 1)))
+
+	list.RPop()
+	fmt.Printf("want [a]  is %s\n", printNode(list.Range(0, 1)))
+
+	if reflect.DeepEqual(printNode(list.Range(0, 0)), []string{"a"}) != true {
+		t.Errorf("Rpop %s wrong\n", "b,c")
+	}
+}
+
+func TestLpop(t *testing.T) {
+	list := NewList()
+	list.RPush("a")
+	list.RPush("b")
+	list.RPush("c")
+
+	fmt.Printf("want [a b c]  is %s\n", printNode(list.Range(0, 2)))
+
+	list.LPop()
+	fmt.Printf("want [b c]  is %s\n", printNode(list.Range(0, 1)))
+
+	list.LPop()
+	fmt.Printf("want [c]  is %s\n", printNode(list.Range(0, 1)))
+
+	if reflect.DeepEqual(printNode(list.Range(0, 0)), []string{"c"}) != true {
+		t.Errorf("Lpop %s wrong\n", "a,b")
 	}
 }
 

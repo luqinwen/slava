@@ -22,7 +22,7 @@ const (
 	closed
 )
 
-// Client is a pipeline mode redis client
+// Client is a pipeline mode slava client
 type Client struct {
 	conn        net.Conn
 	pendingReqs chan *request // wait to send
@@ -34,7 +34,7 @@ type Client struct {
 	working *sync.WaitGroup // its counter presents unfinished requests(pending and waiting)
 }
 
-// request is a message sends to redis server
+// request is a message sends to slava server
 type request struct {
 	id        uint64
 	args      [][]byte
@@ -132,7 +132,7 @@ func (client *Client) handleWrite() {
 	}
 }
 
-// Send sends a request to redis server
+// Send sends a request to slava server
 func (client *Client) Send(args [][]byte) slava.Reply {
 	if atomic.LoadInt32(&client.status) != running {
 		return protocol.MakeErrReply("client closed")

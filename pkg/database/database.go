@@ -4,6 +4,7 @@ import (
 	"strings"
 	"time"
 
+	. "slava/internal/data"
 	"slava/internal/interface/database"
 	"slava/internal/interface/slava"
 	"slava/internal/protocol"
@@ -11,8 +12,6 @@ import (
 	"slava/pkg/datastruct/lock"
 	"slava/pkg/logger"
 	"slava/pkg/timewheel"
-
-	. "slava/internal/data"
 )
 
 // 分数据库的功能，slava含有16个分数据库
@@ -23,6 +22,7 @@ import (
 //	lockerSize   = 1024
 //)
 
+// TODO DB字段设置
 type DB struct {
 	index      int       // 表示第几个分数据库
 	data       dict.Dict // 分数据库的数据存放
@@ -31,10 +31,10 @@ type DB struct {
 	// dict.Dict将确保其方法的并发安全
 	// 仅对复杂的命令使用该互斥锁，如，rpush，incr,msetnx...
 	locker *lock.Locks
-	addAof func(Cmdline)
+	AddAof func(Cmdline)
 }
 
-// redis命令的执行函数
+// slava命令的执行函数
 // args 中并不包括cmd命令行
 
 type ExecFunc func(db *DB, args [][]byte) slava.Reply
@@ -65,7 +65,7 @@ func makeDB() *DB {
 		ttlMap:     dict.MakeConcurrent(TtlDictSize),
 		versionMap: dict.MakeConcurrent(DataDictSize),
 		locker:     lock.Make(LockerSize),
-		addAof:     func(line Cmdline) {},
+		AddAof:     func(line Cmdline) {},
 	}
 	return db
 }

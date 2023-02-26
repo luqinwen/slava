@@ -3,15 +3,19 @@ package aof
 import (
 	"io/ioutil"
 	"os"
+	"strconv"
+	"time"
 
+	"github.com/hdt3213/rdb/core"
+	"github.com/hdt3213/rdb/encoder"
+	"github.com/hdt3213/rdb/model"
 	"slava/config"
 	"slava/internal/interface/database"
 	"slava/pkg/datastruct/dict"
+	"slava/pkg/datastruct/quicklist"
+	"slava/pkg/datastruct/set"
 	SortedSet "slava/pkg/datastruct/sortedset"
 	"slava/pkg/logger"
-	"slava/pkg/rdb/model"
-	"strconv"
-	"time"
 )
 
 // todo: forbid concurrent rewrite
@@ -40,7 +44,7 @@ func (persister *Persister) Rewrite2RDB(rdbFilename string) error {
 // Rewrite2RDBForReplication asynchronously rewrite aof data into rdb and returns a channel to receive following data
 // parameter listener would receive following updates of rdb
 // parameter hook allows you to do something during aof pausing
-func (persister Persister) Rewrite2RDBForReplication(rdbFilename string, listener aof.Listener, hook func()) error {
+func (persister Persister) Rewrite2RDBForReplication(rdbFilename string, listener Listener, hook func()) error {
 	ctx, err := persister.startRewrite2RDB(listener, hook)
 	if err != nil {
 		return err
@@ -60,7 +64,7 @@ func (persister Persister) Rewrite2RDBForReplication(rdbFilename string, listene
 	return nil
 }
 
-func (persister *Persister) startRewrite2RDB(newListener aof.Listener, hook func()) (*aof.RewriteCtx, error) {
+func (persister *Persister) startRewrite2RDB(newListener Listener, hook func()) (*RewriteCtx, error) {
 	persister.pausingAof.Lock() // pausing aof
 	defer persister.pausingAof.Unlock()
 
@@ -85,17 +89,17 @@ func (persister *Persister) startRewrite2RDB(newListener aof.Listener, hook func
 	if hook != nil {
 		hook()
 	}
-	return &aof.RewriteCtx{
+	return &RewriteCtx{
 		tmpFile:  file,
 		fileSize: filesize,
 	}, nil
 }
 
-func (persister *Persister) rewrite2RDB(ctx *aof.RewriteCtx) error {
+func (persister *Persister) rewrite2RDB(ctx *RewriteCtx) error {
 	// load aof tmpFile
 	tmpHandler := persister.newRewriteHandler()
 	tmpHandler.LoadAof(int(ctx.fileSize))
-	encoder := rdb.NewEncoder(ctx.tmpFile).EnableCompress()
+	encoder := encoder.NewEncoder(ctx.tmpFile).EnableCompress()
 	err := encoder.WriteHeader()
 	if err != nil {
 		return err
@@ -127,12 +131,12 @@ func (persister *Persister) rewrite2RDB(ctx *aof.RewriteCtx) error {
 		tmpHandler.db.ForEach(i, func(key string, entity *database.DataEntity, expiration *time.Time) bool {
 			var opts []interface{}
 			if expiration != nil {
-				opts = append(opts, rdb.WithTTL(uint64(expiration.UnixNano()/1e6)))
+				opts = append(opts, core.WithTTL(uint64(expiration.UnixNano()/1e6)))
 			}
 			switch obj := entity.Data.(type) {
 			case []byte:
 				err = encoder.WriteStringObject(key, obj, opts...)
-			case List.List:
+			case quicklist.QuickList:
 				vals := make([][]byte, 0, obj.Len())
 				obj.ForEach(func(i int, v interface{}) bool {
 					bytes, _ := v.([]byte)

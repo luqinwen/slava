@@ -2,9 +2,9 @@ package pubsub
 
 import (
 	"github.com/hdt3213/godis/datastruct/list"
-	"github.com/hdt3213/godis/interface/redis"
-	"github.com/hdt3213/godis/lib/utils"
-	"github.com/hdt3213/godis/redis/protocol"
+	"slava/internal/interface/slava"
+	"slava/internal/protocol"
+	"slava/internal/utils"
 	"strconv"
 )
 
@@ -25,7 +25,7 @@ func makeMsg(t string, channel string, code int64) []byte {
  * invoker should lock channel
  * return: is new subscribed
  */
-func subscribe0(hub *Hub, channel string, client redis.Connection) bool {
+func subscribe0(hub *Hub, channel string, client slava.Connection) bool {
 	client.Subscribe(channel)
 
 	// add into hub.subs
@@ -50,7 +50,7 @@ func subscribe0(hub *Hub, channel string, client redis.Connection) bool {
  * invoker should lock channel
  * return: is actually un-subscribe
  */
-func unsubscribe0(hub *Hub, channel string, client redis.Connection) bool {
+func unsubscribe0(hub *Hub, channel string, client slava.Connection) bool {
 	client.UnSubscribe(channel)
 
 	// remove from hub.subs
@@ -71,7 +71,7 @@ func unsubscribe0(hub *Hub, channel string, client redis.Connection) bool {
 }
 
 // Subscribe puts the given connection into the given channel
-func Subscribe(hub *Hub, c redis.Connection, args [][]byte) redis.Reply {
+func Subscribe(hub *Hub, c slava.Connection, args [][]byte) slava.Reply {
 	channels := make([]string, len(args))
 	for i, b := range args {
 		channels[i] = string(b)
@@ -89,7 +89,7 @@ func Subscribe(hub *Hub, c redis.Connection, args [][]byte) redis.Reply {
 }
 
 // UnsubscribeAll removes the given connection from all subscribing channel
-func UnsubscribeAll(hub *Hub, c redis.Connection) {
+func UnsubscribeAll(hub *Hub, c slava.Connection) {
 	channels := c.GetChannels()
 
 	hub.subsLocker.Locks(channels...)
@@ -102,7 +102,7 @@ func UnsubscribeAll(hub *Hub, c redis.Connection) {
 }
 
 // UnSubscribe removes the given connection from the given channel
-func UnSubscribe(db *Hub, c redis.Connection, args [][]byte) redis.Reply {
+func UnSubscribe(db *Hub, c slava.Connection, args [][]byte) slava.Reply {
 	var channels []string
 	if len(args) > 0 {
 		channels = make([]string, len(args))
@@ -130,7 +130,7 @@ func UnSubscribe(db *Hub, c redis.Connection, args [][]byte) redis.Reply {
 }
 
 // Publish send msg to all subscribing client
-func Publish(hub *Hub, args [][]byte) redis.Reply {
+func Publish(hub *Hub, args [][]byte) slava.Reply {
 	if len(args) != 2 {
 		return &protocol.ArgNumErrReply{Cmd: "publish"}
 	}
@@ -146,7 +146,7 @@ func Publish(hub *Hub, args [][]byte) redis.Reply {
 	}
 	subscribers, _ := raw.(*list.LinkedList)
 	subscribers.ForEach(func(i int, c interface{}) bool {
-		client, _ := c.(redis.Connection)
+		client, _ := c.(slava.Connection)
 		replyArgs := make([][]byte, 3)
 		replyArgs[0] = messageBytes
 		replyArgs[1] = []byte(channel)

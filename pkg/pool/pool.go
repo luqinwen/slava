@@ -17,7 +17,7 @@ type Config struct {
 	MaxActive uint
 }
 
-// Pool stores object for reusing, such as redis connection
+// Pool stores object for reusing, such as slava connection
 type Pool struct {
 	Config
 	factory     func() (interface{}, error)
