@@ -48,7 +48,6 @@ func ListenAndServeWithSignal(cfg *Config, handler handler.Handler) error {
 }
 
 // ListenAndServe binds port and handle requests, blocking until close
-// ListenAndServe binds port and handle requests, blocking until close
 func ListenAndServe(listener net.Listener, handler handler.Handler, closeChan <-chan struct{}) {
 	// listen signal
 	errCh := make(chan error)
@@ -70,6 +69,7 @@ func ListenAndServe(listener net.Listener, handler handler.Handler, closeChan <-
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
+			logger.Error("listener accept err:", err)
 			errCh <- err
 			break
 		}
@@ -79,6 +79,7 @@ func ListenAndServe(listener net.Listener, handler handler.Handler, closeChan <-
 		go func() {
 			defer func() {
 				waitDone.Done()
+				logger.Info("disconnect link")
 			}()
 			handler.Handle(ctx, conn)
 		}()

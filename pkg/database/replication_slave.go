@@ -15,6 +15,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	rdb "github.com/hdt3213/rdb/parser"
 	"slava/config"
 	"slava/internal/interface/slava"
 	"slava/internal/protocol"
@@ -22,7 +23,6 @@ import (
 	"slava/internal/utils"
 	"slava/pkg/connection"
 	"slava/pkg/logger"
-	rdb "slava/pkg/rdb/parser"
 )
 
 const (

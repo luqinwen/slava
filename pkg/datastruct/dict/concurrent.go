@@ -3,6 +3,7 @@ package dict
 import (
 	"math"
 	"math/rand"
+	db "slava/internal/interface/database"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -258,13 +259,33 @@ func (dict *ConcurrentDict) Keys() []string {
 
 // 设置一个函数，随机从shard里面去一个key出来
 
-func (s *shard) RamdomKeyFromShard() string {
+func (s *shard) RandomKeyFromShard() string {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 	for key := range s.m {
 		return key
 	}
 	return ""
+}
+
+func (s *shard) RandomKeyFromShardWithTime() (string, int32) {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+	for key, val := range s.m {
+		entity := val.(*db.DataEntity)
+		return key, entity.Lru
+	}
+	return "", -1
+}
+
+func (s *shard) RandomKeyFromShardWithCount() (string, uint32) {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+	for key, val := range s.m {
+		entity := val.(*db.DataEntity)
+		return key, entity.Lfu
+	}
+	return "", 0
 }
 
 // 随机从dict中取limit个keys，可能会包含重复值
@@ -288,7 +309,7 @@ func (dict *ConcurrentDict) RandomKeys(limit int) []string {
 		if sh == nil {
 			continue
 		}
-		key := sh.RamdomKeyFromShard()
+		key := sh.RandomKeyFromShard()
 		// 选到的shard里面可能是什么都没有存储有的，所以key可能为”“
 		// 如果key为空则不进行i++，继续选择随机数，然后继续随机生成shard，进行取值
 		if key != "" {
@@ -319,7 +340,7 @@ func (dict *ConcurrentDict) RandomDistinctKeys(limit int) []string {
 			continue
 		}
 		// 随机生成一个key
-		key := sh.RamdomKeyFromShard()
+		key := sh.RandomKeyFromShard()
 		// 判断key的值
 		if key != "" {
 			if _, exist := existKeyMap[key]; !exist { // 如果当前的key没有在map中则添加，说明没有遍历过该key
@@ -336,4 +357,100 @@ func (dict *ConcurrentDict) RandomDistinctKeys(limit int) []string {
 
 func (dict *ConcurrentDict) Clear() {
 	*dict = *MakeConcurrent(dict.shardCount)
+}
+
+/*
+	func (dict *ConcurrentDict) GetShard(i int) (*shard, error) {
+		if i > len(dict.table) {
+			return nil, errors.New("wrong shard index")
+		}
+
+		return dict.table[i], nil
+	}
+*/
+
+func (dict *ConcurrentDict) RandomDistinctKeysWithTime(limit int) map[string]int32 {
+	if dict == nil {
+		panic("dict is nil")
+	}
+
+	if limit >= dict.Len() {
+		keyLruMap := make(map[string]int32, dict.Len())
+		i := 0
+		dict.ForEach(func(key string, val interface{}) bool {
+			// 不考虑新key加入问题
+			entity := val.(*db.DataEntity)
+			if i < len(keyLruMap) {
+				keyLruMap[key] = entity.Lru
+				i++
+			}
+			return true
+		})
+		return keyLruMap
+	}
+
+	// 定义一个map，用来存储已经拿出来的key
+	keyLruMap := make(map[string]int32, limit)
+	// 产生随机不重复的数字
+	nR := rand.New(rand.NewSource(time.Now().UnixNano()))
+	for i := 0; i < limit; {
+		sh := dict.getShard(uint32(nR.Intn(dict.shardCount)))
+		// 如果sh==nil跳过
+		if sh == nil {
+			continue
+		}
+		// 随机生成一个key
+		key, lru := sh.RandomKeyFromShardWithTime()
+		// 判断key的值
+		if key != "" {
+			if _, exist := keyLruMap[key]; !exist { // 如果当前的key没有在map中则添加，说明没有遍历过该key
+				keyLruMap[key] = lru
+				i++
+			}
+		}
+	}
+	return keyLruMap
+}
+
+func (dict *ConcurrentDict) RandomDistinctKeysWithCount(limit int) map[string]uint32 {
+	if dict == nil {
+		panic("dict is nil")
+	}
+
+	if limit >= dict.Len() {
+		keyLfuMap := make(map[string]uint32, dict.Len())
+		i := 0
+		dict.ForEach(func(key string, val interface{}) bool {
+			// 不考虑新key加入问题
+			entity := val.(*db.DataEntity)
+			if i < len(keyLfuMap) {
+				keyLfuMap[key] = entity.Lfu
+				i++
+			}
+			return true
+		})
+		return keyLfuMap
+	}
+
+	// 定义一个map，用来存储已经拿出来的key
+	keyLfuMap := make(map[string]uint32, limit)
+	// 产生随机不重复的数字
+	nR := rand.New(rand.NewSource(time.Now().UnixNano()))
+	for i := 0; i < limit; {
+		sh := dict.getShard(uint32(nR.Intn(dict.shardCount)))
+		// 如果sh==nil跳过
+		if sh == nil {
+			continue
+		}
+		// 随机生成一个key
+		key, lfu := sh.RandomKeyFromShardWithCount()
+		// 判断key的值
+		if key != "" {
+			if _, exist := keyLfuMap[key]; !exist { // 如果当前的key没有在map中则添加，说明没有遍历过该key
+				keyLfuMap[key] = lfu
+				i++
+			}
+		}
+	}
+	return keyLfuMap
 }

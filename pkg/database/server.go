@@ -31,6 +31,10 @@ type Server struct {
 	role         int32
 	slaveStatus  *slaveStatus
 	masterStatus *masterStatus
+
+	// for memory release
+	maxMemory       uint64
+	maxMemoryPolicy uint8
 }
 
 // NewStandaloneServer creates a standalone slava server, with multi database and all other funtions
@@ -213,7 +217,7 @@ func (server *Server) loadDB(dbIndex int, newDB *DB) slava.Reply {
 	}
 	oldDB := server.mustSelectDB(dbIndex)
 	newDB.index = dbIndex
-	newDB.addAof = oldDB.addAof // inherit oldDB
+	newDB.AddAof = oldDB.AddAof // inherit oldDB
 	server.dbSet[dbIndex].Store(newDB)
 	return &protocol.OkReply{}
 }
