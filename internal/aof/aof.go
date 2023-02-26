@@ -166,7 +166,7 @@ func (persister *Persister) writeAof(p *payload) {
 
 // LoadAof read aof file, can only be used before Persister.listenCmd started
 func (persister *Persister) LoadAof(maxBytes int) {
-	// persister.db.Exec may call persister.addAof
+	// persister.db.Exec may call persister.AddAof
 	// delete aofChan to prevent loaded commands back into aofChan
 	aofChan := persister.aofChan
 	persister.aofChan = nil

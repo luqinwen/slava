@@ -75,7 +75,7 @@ func (server *Server) loadRDB(dec *core.Decoder) error {
 			if o.GetExpiration() != nil {
 				db.Expire(o.GetKey(), *o.GetExpiration())
 			}
-			db.addAof(aof.EntityToCmd(o.GetKey(), entity).Args)
+			db.AddAof(aof.EntityToCmd(o.GetKey(), entity).Args)
 		}
 		return true
 	})
@@ -98,7 +98,7 @@ func (server *Server) bindPersister(aofHandler *aof.Persister) {
 	// bind SaveCmdLine
 	for _, db := range server.dbSet {
 		singleDB := db.Load().(*DB)
-		singleDB.addAof = func(line aof.CmdLine) {
+		singleDB.AddAof = func(line aof.CmdLine) {
 			if config.Properties.AppendOnly { // config may be changed during runtime
 				server.persister.SaveCmdLine(singleDB.index, line)
 			}
