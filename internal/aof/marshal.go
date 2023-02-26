@@ -11,7 +11,7 @@ import (
 	SortedSet "slava/pkg/datastruct/sortedset"
 )
 
-// EntityToCmd serialize data entity to redis command
+// EntityToCmd serialize data entity to slava command
 func EntityToCmd(key string, entity *database.DataEntity) *protocol.MultiBulkReply {
 	if entity == nil {
 		return nil

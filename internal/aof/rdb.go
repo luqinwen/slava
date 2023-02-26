@@ -6,12 +6,14 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/hdt3213/godis/aof"
-	"github.com/hdt3213/godis/datastruct/set"
+	"github.com/hdt3213/rdb/core"
+	"github.com/hdt3213/rdb/encoder"
 	"github.com/hdt3213/rdb/model"
 	"slava/config"
 	"slava/internal/interface/database"
 	"slava/pkg/datastruct/dict"
+	"slava/pkg/datastruct/quicklist"
+	"slava/pkg/datastruct/set"
 	SortedSet "slava/pkg/datastruct/sortedset"
 	"slava/pkg/logger"
 )
@@ -62,7 +64,7 @@ func (persister Persister) Rewrite2RDBForReplication(rdbFilename string, listene
 	return nil
 }
 
-func (persister *Persister) startRewrite2RDB(newListener Listener, hook func()) (*aof.RewriteCtx, error) {
+func (persister *Persister) startRewrite2RDB(newListener Listener, hook func()) (*RewriteCtx, error) {
 	persister.pausingAof.Lock() // pausing aof
 	defer persister.pausingAof.Unlock()
 
@@ -87,17 +89,17 @@ func (persister *Persister) startRewrite2RDB(newListener Listener, hook func()) 
 	if hook != nil {
 		hook()
 	}
-	return &aof.RewriteCtx{
+	return &RewriteCtx{
 		tmpFile:  file,
 		fileSize: filesize,
 	}, nil
 }
 
-func (persister *Persister) rewrite2RDB(ctx *aof.RewriteCtx) error {
+func (persister *Persister) rewrite2RDB(ctx *RewriteCtx) error {
 	// load aof tmpFile
 	tmpHandler := persister.newRewriteHandler()
 	tmpHandler.LoadAof(int(ctx.fileSize))
-	encoder := rdb.NewEncoder(ctx.tmpFile).EnableCompress()
+	encoder := encoder.NewEncoder(ctx.tmpFile).EnableCompress()
 	err := encoder.WriteHeader()
 	if err != nil {
 		return err
@@ -129,12 +131,12 @@ func (persister *Persister) rewrite2RDB(ctx *aof.RewriteCtx) error {
 		tmpHandler.db.ForEach(i, func(key string, entity *database.DataEntity, expiration *time.Time) bool {
 			var opts []interface{}
 			if expiration != nil {
-				opts = append(opts, rdb.WithTTL(uint64(expiration.UnixNano()/1e6)))
+				opts = append(opts, core.WithTTL(uint64(expiration.UnixNano()/1e6)))
 			}
 			switch obj := entity.Data.(type) {
 			case []byte:
 				err = encoder.WriteStringObject(key, obj, opts...)
-			case List.List:
+			case quicklist.QuickList:
 				vals := make([][]byte, 0, obj.Len())
 				obj.ForEach(func(i int, v interface{}) bool {
 					bytes, _ := v.([]byte)

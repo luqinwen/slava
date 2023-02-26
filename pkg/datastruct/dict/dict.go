@@ -3,7 +3,7 @@ package dict
 // 定义一个Consumer函数，该函数是用来遍历dict，如果在该函数中返回fasle则停止遍历
 type Consumer func(key string, val interface{}) bool
 
-// 定义一个接口，redis底层用的数据结构，map
+// 定义一个接口，slava底层用的数据结构，map
 // 定义一个接口的目的就是，在实现的时候可以根据需要选择不一样数据结构进行实现，比如普通的map、sync.Map等
 // 定义接口，有利于改善和迭代项目
 

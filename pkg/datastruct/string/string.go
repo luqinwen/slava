@@ -1,26 +1,22 @@
 package string
 
 import (
+	"math/bits"
 	"strconv"
 	"strings"
 	"time"
 
-	"math/bits"
-
-	db "slava/pkg/database"
-
+	"github.com/shopspring/decimal"
+	. "slava/internal/data"
 	"slava/internal/interface/database"
 	"slava/internal/interface/slava"
 	"slava/internal/protocol"
 	"slava/internal/utils"
+	db "slava/pkg/database"
 	"slava/pkg/datastruct/bitmap"
-
-	. "slava/internal/data"
-
-	"github.com/shopspring/decimal"
 )
 
-// 这个包主要实现redis的string操作，比如Get、Set、Incr、Decr、StrLen、Append等操作
+// 这个包主要实现slava的string操作，比如Get、Set、Incr、Decr、StrLen、Append等操作
 
 // Get 获取某个键的值
 func execGet(db *db.DB, args [][]byte) slava.Reply {
@@ -87,7 +83,7 @@ func execGetEX(db *db.DB, args [][]byte) slava.Reply {
 				return protocol.MakeErrReply("ERR invalid expire time in getnx")
 			}
 			ttl = ttlArg
-		} else if arg == "PERSIST" { // 取消某个键的ttlCmd，不能和EX和PX共用。Redis PERSIST 命令用于移除给定 key 的过期时间，使得 key 永不过期。
+		} else if arg == "PERSIST" { // 取消某个键的ttlCmd，不能和EX和PX共用。slava PERSIST 命令用于移除给定 key 的过期时间，使得 key 永不过期。
 			if ttl != UnlimitedTTl { // PERSIST和EX或者PX不能一块使用
 				return &protocol.SyntaxErrReply{}
 			}

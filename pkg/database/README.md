@@ -42,7 +42,7 @@
 
 ## transaction.go
 
-这个包主要是处理redis中的事务命令，比如Multi、Exec、Watch等
+这个包主要是处理slava中的事务命令，比如Multi、Exec、Watch等
 
 ## tx_utils
 
