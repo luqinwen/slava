@@ -1,0 +1,10 @@
+version: "0.0"
+services:
+  server:
+    build:
+      context: ../
+      dockerfile: ./build/docker/slava/Dockerfile
+    ports:
+      - "6399:6399"
+    image: slava-server-img
+    container_name: slava

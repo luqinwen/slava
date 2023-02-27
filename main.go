@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+
 	"slava/config"
 	. "slava/internal/data"
 	"slava/internal/slava/server"
