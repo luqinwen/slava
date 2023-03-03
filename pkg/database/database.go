@@ -32,7 +32,7 @@ type DB struct {
 	// dict.Dict将确保其方法的并发安全
 	// 仅对复杂的命令使用该互斥锁，如，rpush，incr,msetnx...
 	locker *lock.Locks
-	AddAof func(Cmdline)
+	AddAof func(CmdLine)
 }
 
 // slava命令的执行函数
@@ -40,19 +40,15 @@ type DB struct {
 type ExecFunc func(db *DB, args [][]byte) slava.Reply
 
 // CmdLine表示命令行
-// TODO cmd统一
 type CmdLine = [][]byte
-type Cmdline = [][]byte
 
 // PreFun 将在”multi“命令中使用，返回相关的写键和读键
 // 该函数在ExecFunc前执行，负责分析命令行读写了哪些key便于进行加锁
-
 type PreFunc func(args [][]byte) ([]string, []string)
 
 //UndoFunc返回给定命令行的撤消日志，仅在事务中使用，负责undo logs以备事务执行过程中遇到错误需要回滚
 //撤消时从头到尾执行
-
-type UndoFunc func(db *DB, args [][]byte) []Cmdline
+type UndoFunc func(db *DB, args [][]byte) []CmdLine
 
 // 初始化DB
 func MakeDB() *DB {
@@ -65,7 +61,7 @@ func makeDB() *DB {
 		ttlMap:     dict.MakeConcurrent(TtlDictSize),
 		versionMap: dict.MakeConcurrent(DataDictSize),
 		locker:     lock.Make(LockerSize),
-		AddAof:     func(line Cmdline) {},
+		AddAof:     func(line CmdLine) {},
 	}
 	return db
 }
@@ -73,7 +69,7 @@ func makeDB() *DB {
 // 一个分数据库中执行命令
 // transaction包下有控制事务命令和其他不能在事务中执行的命令
 
-func (db *DB) Exec(c slava.Connection, cmdLine Cmdline) slava.Reply {
+func (db *DB) Exec(c slava.Connection, cmdLine CmdLine) slava.Reply {
 	cmdName := strings.ToLower(string(cmdLine[0]))
 	if cmdName == "multi" { // 命令为开始事务的命令
 		if len(cmdLine) != 1 {
@@ -191,7 +187,6 @@ func (db *DB) Expire(key string, expireTime time.Time) {
 }
 
 // 取消一个key的ttlCmd
-
 func (db *DB) Persist(key string) {
 	db.ttlMap.Remove(key)
 	taskKey := genExpireTask(key)
@@ -259,7 +254,6 @@ func (db *DB) Remove(key string) {
 }
 
 // 从数据库中移除多个键值
-
 func (db *DB) Removes(keys ...string) int {
 	deleted := 0
 	for _, key := range keys {
@@ -275,10 +269,10 @@ func (db *DB) Removes(keys ...string) int {
 // Flush清空数据库
 func (db *DB) Flush() {
 	*db = *makeDB()
+	// TODO remove rdb and aof file
 }
 
 // 遍历所有的key
-
 func (db *DB) ForEach(cb func(key string, data *database.DataEntity, expiration *time.Time) bool) {
 	db.data.ForEach(func(key string, val interface{}) bool {
 		entity, _ := val.(*database.DataEntity)
@@ -305,7 +299,6 @@ func (db *DB) GetAsString(key string) ([]byte, protocol.ErrorReply) {
 }
 
 /* ---- Lock Function ----- */
-
 // RWLocks lock keys for writing and reading
 func (db *DB) RWLocks(writeKeys []string, readKeys []string) {
 	db.locker.RWLocks(writeKeys, readKeys)

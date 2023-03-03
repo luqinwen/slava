@@ -85,12 +85,12 @@ func execListRPush(db *DB, args [][]byte) slava.Reply {
 }
 
 // 通过ListRpop操作进行撤销
-func undoRPush(db *DB, args [][]byte) []Cmdline {
+func undoRPush(db *DB, args [][]byte) []CmdLine {
 	// args[0] key
 	// args[1:] 参数
 	key := string(args[0])
 	count := len(args) - 1
-	cmdLines := make([]Cmdline, 0, count)
+	cmdLines := make([]CmdLine, 0, count)
 	for i := 0; i < count; i++ {
 		cmdLines = append(cmdLines, utils.ToCmdLine("ListRpop", key))
 	}
@@ -115,12 +115,12 @@ func execListLPush(db *DB, args [][]byte) slava.Reply {
 	return protocol.MakeIntReply(int64(list.Len()))
 }
 
-func undoLPush(db *DB, args [][]byte) []Cmdline {
+func undoLPush(db *DB, args [][]byte) []CmdLine {
 	// args[0] key
 	// args[1:] 参数
 	key := string(args[0])
 	count := len(args) - 1
-	cmdLines := make([]Cmdline, 0, count)
+	cmdLines := make([]CmdLine, 0, count)
 	for i := 0; i < count; i++ {
 		cmdLines = append(cmdLines, utils.ToCmdLine("ListLpop", key))
 	}

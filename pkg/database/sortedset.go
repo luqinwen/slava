@@ -78,7 +78,7 @@ func execZAdd(db *DB, args [][]byte) slava.Reply {
 	return protocol.MakeIntReply(int64(i))
 }
 
-func undoZAdd(db *DB, args [][]byte) []Cmdline {
+func undoZAdd(db *DB, args [][]byte) []CmdLine {
 	key := string(args[0])
 	size := (len(args) - 1) / 2
 	fields := make([]string, size)
@@ -577,7 +577,7 @@ func execZRem(db *DB, args [][]byte) slava.Reply {
 	return protocol.MakeIntReply(deleted)
 }
 
-func undoZRem(db *DB, args [][]byte) []Cmdline {
+func undoZRem(db *DB, args [][]byte) []CmdLine {
 	key := string(args[0])
 	fields := make([]string, len(args)-1)
 	fieldArgs := args[1:]
@@ -616,7 +616,7 @@ func execZIncrBy(db *DB, args [][]byte) slava.Reply {
 	return protocol.MakeBulkReply(bytes)
 }
 
-func undoZIncr(db *DB, args [][]byte) []Cmdline {
+func undoZIncr(db *DB, args [][]byte) []CmdLine {
 	key := string(args[0])
 	field := string(args[2])
 	return RollbackZSetFields(db, key, field)

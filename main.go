@@ -16,7 +16,7 @@ func fileExists(filename string) bool {
 	return err == nil && !info.IsDir()
 }
 
-func main() {
+func init() {
 	print(Banner)
 	logger.Setup(&logger.Settings{
 		Path:       "logs",
@@ -24,6 +24,10 @@ func main() {
 		Ext:        "log",
 		TimeFormat: "2006-01-02",
 	})
+}
+
+func main() {
+
 	configFilename := os.Getenv("CONFIG")
 	if configFilename == "" {
 		if fileExists("slava.conf") {

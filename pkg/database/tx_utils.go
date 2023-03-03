@@ -28,12 +28,12 @@ func ReadAllKeys(args [][]byte) ([]string, []string) {
 //	return nil, nil
 //}
 
-func RollbackFirstKey(db *DB, args [][]byte) []Cmdline {
+func RollbackFirstKey(db *DB, args [][]byte) []CmdLine {
 	key := string(args[0])
 	return RollbackGivenKeys(db, key)
 }
 
-func RollbackGivenKeys(db *DB, keys ...string) []Cmdline {
+func RollbackGivenKeys(db *DB, keys ...string) []CmdLine {
 	var undoCmdLine [][][]byte
 	for _, key := range keys {
 		_, ok := db.GetEntity(key)
@@ -46,7 +46,7 @@ func RollbackGivenKeys(db *DB, keys ...string) []Cmdline {
 	return undoCmdLine
 }
 
-func RollbackZSetFields(db *DB, key string, fields ...string) []Cmdline {
+func RollbackZSetFields(db *DB, key string, fields ...string) []CmdLine {
 	var undoCmdLines [][][]byte
 	zset, errReply := db.getAsSortedSet(key)
 	if errReply != nil {
