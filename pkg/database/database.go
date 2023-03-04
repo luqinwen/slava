@@ -37,7 +37,6 @@ type DB struct {
 
 // slava命令的执行函数
 // args 中并不包括cmd命令行
-
 type ExecFunc func(db *DB, args [][]byte) slava.Reply
 
 // CmdLine表示命令行
