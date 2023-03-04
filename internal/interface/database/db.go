@@ -30,4 +30,6 @@ type DBEngine interface {
 // DataEntity stores data bound to a key, including a string, list, hash, set and so on
 type DataEntity struct {
 	Data interface{}
+	Lru  int32  // time unix
+	Lfu  uint32 // count
 }
