@@ -31,6 +31,10 @@ type Server struct {
 	role         int32
 	slaveStatus  *slaveStatus
 	masterStatus *masterStatus
+
+	// for memory release
+	maxMemory       uint64
+	maxMemoryPolicy uint8
 }
 
 // NewStandaloneServer creates a standalone slava server, with multi database and all other funtions
