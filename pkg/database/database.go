@@ -2,6 +2,7 @@ package database
 
 import (
 	"strings"
+	"sync/atomic"
 	"time"
 
 	. "slava/internal/data"
@@ -224,21 +225,29 @@ func (db *DB) GetEntity(key string) (*database.DataEntity, bool) {
 		return nil, false
 	}
 	entity, _ := raw.(*database.DataEntity)
+	atomic.StoreInt32(&entity.Lru, int32(time.Now().Unix()))
+	atomic.AddUint32(&entity.Lfu, 1)
 	return entity, true
 }
 
 // 在分数据库中加入一个key value
 func (db *DB) PutEntity(key string, entity *database.DataEntity) int {
+	atomic.StoreInt32(&entity.Lru, int32(time.Now().Unix()))
+	atomic.AddUint32(&entity.Lfu, 1)
 	return db.data.Put(key, entity)
 }
 
 // 如果存在则修改，返回1，如果不存在返回0
 func (db *DB) PutIfAbsent(key string, entity *database.DataEntity) int {
+	atomic.StoreInt32(&entity.Lru, int32(time.Now().Unix()))
+	atomic.AddUint32(&entity.Lfu, 1)
 	return db.data.PutIfAbsent(key, entity)
 }
 
 // 如果不存在的时候加入，返回1，否则返回0
 func (db *DB) PutIfExists(key string, entity *database.DataEntity) int {
+	atomic.StoreInt32(&entity.Lru, int32(time.Now().Unix()))
+	atomic.AddUint32(&entity.Lfu, 1)
 	return db.data.PutIfExists(key, entity)
 }
 
@@ -266,7 +275,7 @@ func (db *DB) Removes(keys ...string) int {
 
 // Flush清空数据库
 func (db *DB) Flush() {
-	makeDB()
+	*db = *makeDB()
 }
 
 // 遍历所有的key
