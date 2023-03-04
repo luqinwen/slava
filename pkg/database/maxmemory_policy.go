@@ -60,6 +60,7 @@ func (server *Server) freeMemoryIfNeeded(keyNumsOneRound int, dbNumsOneRound int
 			}
 
 			if server.maxMemoryPolicy == maxMemoryLfuAllKeys || server.maxMemoryPolicy == maxMemoryLfuTtl {
+				wg.Add(1)
 				if server.maxMemoryPolicy == maxMemoryLfuTtl {
 					// ttl
 					go func() {
