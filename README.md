@@ -4,6 +4,7 @@ A High-performance、K-V Cloud Database.<br>
 ![GitHub](https://img.shields.io/github/license/luqinwen/slava?style=flat-square)
 [![Go Reference](https://pkg.go.dev/badge/github.com/luqinwen/slava.svg)](https://pkg.go.dev/github.com/luqinwen/slava)
 [![CircleCI](https://dl.circleci.com/status-badge/img/gh/luqinwen/slava/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/luqinwen/slava/tree/main)
+[![Go Report Card](https://goreportcard.com/badge/github.com/luqinwen/slava)](https://goreportcard.com/report/github.com/luqinwen/slava)
 <br>
 
 
