@@ -302,7 +302,7 @@ func prepareMSet(args [][]byte) ([]string, []string) {
 	return keys, nil
 }
 
-func undoMSet(d *db.DB, args [][]byte) []db.Cmdline {
+func undoMSet(d *db.DB, args [][]byte) []db.CmdLine {
 	weiteKeys, _ := prepareMSet(args)
 	return db.RollbackGivenKeys(d, weiteKeys...)
 }

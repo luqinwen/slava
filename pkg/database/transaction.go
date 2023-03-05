@@ -41,7 +41,7 @@ func execMulti(db *DB, conn slava.Connection) slava.Reply {
 }
 
 // ExecMulti 以原子性和隔离性方式执行多命令事务
-func (db *DB) ExecMulti(conn slava.Connection, watching map[string]uint32, cmdLines []Cmdline) slava.Reply {
+func (db *DB) ExecMulti(conn slava.Connection, watching map[string]uint32, cmdLines []CmdLine) slava.Reply {
 	// prepare
 	writeKeys := make([]string, 0, len(cmdLines)) // 提升性能，预分配内存
 	readKeys := make([]string, 0, len(cmdLines))
@@ -69,7 +69,7 @@ func (db *DB) ExecMulti(conn slava.Connection, watching map[string]uint32, cmdLi
 	// 如果监控的key没有被别的线程修改则执行其中的事务
 	results := make([]slava.Reply, 0, len(cmdLines)) // 记录所有事务所有指令的返回结果
 	aborted := false                                 // 取消事务，开始先默认false
-	undoCmdLines := make([][]Cmdline, 0, len(cmdLines))
+	undoCmdLines := make([][]CmdLine, 0, len(cmdLines))
 	for _, cmdLine := range cmdLines {
 		undoCmdLines = append(undoCmdLines, db.GetUndoLogs(cmdLine))
 		result := db.execWithLock(cmdLine)
@@ -122,7 +122,7 @@ func isWatchingChanged(db *DB, watching map[string]uint32) bool {
 	return false
 }
 
-func (db *DB) GetUndoLogs(cmdLine [][]byte) []Cmdline {
+func (db *DB) GetUndoLogs(cmdLine [][]byte) []CmdLine {
 	cmdName := strings.ToLower(string(cmdLine[0]))
 	cmd, ok := cmdTable[cmdName]
 	if !ok {
