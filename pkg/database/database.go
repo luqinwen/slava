@@ -128,7 +128,6 @@ func validateArity(arity int, cmdArgs [][]byte) bool {
 }
 
 // GetVersion返回某个给定key的版本码，用在watch中，在执行exec操作的时候用来对比监控的key值是否发生改变
-
 func (db *DB) GetVersion(key string) uint32 {
 	entity, ok := db.versionMap.Get(key)
 	if !ok { // 没取到值
