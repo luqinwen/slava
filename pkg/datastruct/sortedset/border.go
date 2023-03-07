@@ -5,14 +5,16 @@ import (
 	"strconv"
 )
 
-/*
- * ScoreBorder is a struct represents `min` `max` parameter of slava command `ZRANGEBYSCORE`
- * can accept:
- *   int or float value, such as 2.718, 2, -2.718, -2 ...
- *   exclusive int or float value, such as (2.718, (2, (-2.718, (-2 ...
- *   infinity: +inf, -inf， inf(same as +inf)
- */
-
+// 这段代码实现了一个 ScoreBorder 结构体，用于表示 ZRANGEBYSCORE 命令中的 min 和 max 参数，包括 <, <=, >, >=, +inf 和 -inf。
+// 同时，提供了 ParseScoreBorder 函数，用于将字符串解析为 ScoreBorder 对象。
+//
+// ScoreBorder 包含三个字段，分别为 Inf、Value 和 Exclude，表示范围的上下限、具体的值以及是否包含上下限。
+// greater 函数用于判断某个数值是否在 ScoreBorder 的上限范围之内，less 函数则用于判断是否在下限范围之内。
+// 代码中还定义了 positiveInfBorder 和 negativeInfBorder 两个变量，用于表示正无穷和负无穷。
+// ParseScoreBorder 函数接收一个字符串作为参数，根据字符串的内容返回一个 ScoreBorder 对象。
+// 如果字符串表示正负无穷，则返回 positiveInfBorder 或 negativeInfBorder；
+// 如果字符串以 ( 开头，则表示排除这个值，即 ScoreBorder.Exclude 为 true；
+// 否则表示包含这个值，ScoreBorder.Exclude 为 false。
 const (
 	negativeInf int8 = -1
 	positiveInf int8 = 1

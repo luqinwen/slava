@@ -6,13 +6,11 @@ import (
 )
 
 // Lock结构体为key提供读写锁
-
 type Locks struct {
 	table []*sync.RWMutex
 }
 
 // 创建一个lock map
-
 func Make(tableSize int) *Locks {
 	table := make([]*sync.RWMutex, tableSize)
 	for i := 0; i < len(table); i++ {
@@ -45,7 +43,6 @@ func (locks *Locks) spread(hashCode uint32) uint32 {
 }
 
 // 获取某个key的写锁
-
 func (locks *Locks) Lock(key string) {
 	index := locks.spread(fnv32(key))
 	mu := locks.table[index]
@@ -53,7 +50,6 @@ func (locks *Locks) Lock(key string) {
 }
 
 // 获取key的读锁
-
 func (locks *Locks) RLock(key string) {
 	index := locks.spread(fnv32(key))
 	mu := locks.table[index]
@@ -61,7 +57,6 @@ func (locks *Locks) RLock(key string) {
 }
 
 // 释放key的写锁
-
 func (locks *Locks) UnLock(key string) {
 	index := locks.spread(fnv32(key))
 	mu := locks.table[index]
@@ -69,7 +64,6 @@ func (locks *Locks) UnLock(key string) {
 }
 
 // 释放key对应的读锁
-
 func (locks *Locks) RUnLock(key string) {
 	index := locks.spread(fnv32(key))
 	mu := locks.table[index]
@@ -82,7 +76,6 @@ func (locks *Locks) RUnLock(key string) {
 // 解决的办法，就是按照一定的的顺序进行加锁
 
 // 获取多个keys所在的槽，并且根据reverse字段选择进行排序，如果reverse为true则按照从大到小排序，如果为false则按照从小到大排序
-
 func (locks *Locks) toLockindices(keys []string, reverse bool) []uint32 {
 	// 用来存储keys所对应的所有索引
 	indexMap := make(map[uint32]struct{})
@@ -116,7 +109,6 @@ func (locks *Locks) Locks(keys ...string) {
 }
 
 // 对多个key上读锁，防止协程相互等待对方的资源而导致死锁
-
 func (locks *Locks) RLocks(keys ...string) {
 	indices := locks.toLockindices(keys, false)
 	for _, index := range indices {
@@ -130,7 +122,6 @@ func (locks *Locks) RLocks(keys ...string) {
 // 例如，A协程含有所有的资源锁a，b，c，此时B协程想要上锁，如果A协程先从小的锁开始释放的话
 // 这时候A协程释放了a资源，这时候B协程获取了a资源，还要等待b，c 资源，然而这是A协程要处理某些情况又需要a资源
 // 这时候A协程就会等待B协程释放a资源，而B协程等待A协程释放b，c资源，这样就形成相互等待对方的资源释放，而形成死锁。
-
 func (locks *Locks) UnLocks(keys ...string) {
 	indices := locks.toLockindices(keys, true)
 	for _, index := range indices {
@@ -140,7 +131,6 @@ func (locks *Locks) UnLocks(keys ...string) {
 }
 
 // 释放多个key的读锁
-
 func (locks *Locks) RUnLocks(keys ...string) {
 	indices := locks.toLockindices(keys, true)
 	for _, index := range indices {
@@ -150,7 +140,6 @@ func (locks *Locks) RUnLocks(keys ...string) {
 }
 
 // 对写和读的操作进行上锁，在写和读的命令中允许存在重复的key
-
 func (locks *Locks) RWLocks(writeKeys []string, readKeys []string) {
 	keys := append(writeKeys, readKeys...)
 	indices := locks.toLockindices(keys, false)

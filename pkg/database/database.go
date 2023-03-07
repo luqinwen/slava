@@ -10,7 +10,9 @@ import (
 	"slava/internal/interface/slava"
 	"slava/internal/protocol"
 	"slava/pkg/datastruct/dict"
+	"slava/pkg/datastruct/list"
 	"slava/pkg/datastruct/lock"
+	SortedSet "slava/pkg/datastruct/sortedset"
 	"slava/pkg/logger"
 	"slava/pkg/timewheel"
 )
@@ -128,7 +130,6 @@ func validateArity(arity int, cmdArgs [][]byte) bool {
 }
 
 // GetVersion返回某个给定key的版本码，用在watch中，在执行exec操作的时候用来对比监控的key值是否发生改变
-
 func (db *DB) GetVersion(key string) uint32 {
 	entity, ok := db.versionMap.Get(key)
 	if !ok { // 没取到值
@@ -286,7 +287,7 @@ func (db *DB) ForEach(cb func(key string, data *database.DataEntity, expiration 
 	})
 }
 
-func (db *DB) GetAsString(key string) ([]byte, protocol.ErrorReply) {
+func (db *DB) getAsString(key string) ([]byte, protocol.ErrorReply) {
 	entity, exists := db.GetEntity(key)
 	if !exists {
 		return nil, nil
@@ -296,6 +297,62 @@ func (db *DB) GetAsString(key string) ([]byte, protocol.ErrorReply) {
 		return nil, &protocol.WrongTypeErrReply{}
 	}
 	return bytes, nil
+}
+
+func (db *DB) getAsSortedSet(key string) (*SortedSet.SortedSet, protocol.ErrorReply) {
+	entity, exists := db.GetEntity(key)
+	if !exists {
+		return nil, nil
+	}
+	sortedSet, ok := entity.Data.(*SortedSet.SortedSet)
+	if !ok {
+		return nil, &protocol.WrongTypeErrReply{}
+	}
+	return sortedSet, nil
+}
+
+func (db *DB) getOrInitSortedSet(key string) (sortedSet *SortedSet.SortedSet, inited bool, errReply protocol.ErrorReply) {
+	sortedSet, errReply = db.getAsSortedSet(key)
+	if errReply != nil {
+		return nil, false, errReply
+	}
+	inited = false
+	if sortedSet == nil {
+		sortedSet = SortedSet.Make()
+		db.PutEntity(key, &database.DataEntity{
+			Data: sortedSet,
+		})
+		inited = true
+	}
+	return sortedSet, inited, nil
+}
+
+func (db *DB) getAsList(key string) (*list.List, protocol.ErrorReply) {
+	entity, exists := db.GetEntity(key)
+	if !exists {
+		return nil, nil
+	}
+	list_, ok := entity.Data.(*list.List)
+	if !ok {
+		return nil, &protocol.WrongTypeErrReply{}
+	}
+	return list_, nil
+}
+
+// 首先获取getList，如果list不为空，则返回；如果为空，则初始化一个list
+func (db *DB) getOrInitList(key string) (*list.List, bool, protocol.ErrorReply) {
+	getList, errReply := db.getAsList(key)
+	if errReply != nil {
+		return nil, false, errReply
+	}
+	isNew := false
+	if getList == nil {
+		getList = list.NewList()
+		db.PutEntity(key, &database.DataEntity{
+			Data: getList,
+		})
+	}
+	return getList, isNew, nil
 }
 
 /* ---- Lock Function ----- */
