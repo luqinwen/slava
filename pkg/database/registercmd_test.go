@@ -29,7 +29,7 @@ func TestRegisterCmd(t *testing.T) {
 	RegisterCommandTest("Get", execGet, ReadFirstKey, nil, ArityTwo, FlagReadOnly)
 	RegisterCommandTest("SetNX", execSet, WriteFirstKey, RollbackFirstKey, ArityNegativeTree, FlagWrite)
 	RegisterCommandTest("GexEx", execSet, WriteFirstKey, RollbackFirstKey, ArityNegativeTree, FlagWrite)
-	if len(mockCmdTable) != 2 {
+	if len(mockCmdTable) != 4 {
 		t.Errorf("The length of mockCmdTable expected be 2, but %d got", len(mockCmdTable))
 	}
 }
