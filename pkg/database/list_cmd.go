@@ -8,18 +8,6 @@ import (
 	"slava/internal/utils"
 )
 
-// ==========执行操作
-/*
-List的操作
-	Len()
-	RPush(value)
-	LPush(value)
-	Rpop()
-	Lpop()
-	GetByIndex(index)
-	Range(start, stop)
-*/
-
 // 获取链表长度
 func execListLen(db *DB, args [][]byte) slava.Reply {
 	key := string(args[0])

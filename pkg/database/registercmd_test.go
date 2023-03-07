@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	. "slava/internal/data"
+	"slava/internal/protocol"
+	"slava/internal/utils"
 )
 
 var mockCmdTable = make(map[string]*command)
@@ -25,13 +27,14 @@ func TestRegisterCmd(t *testing.T) {
 	RegisterCommandTest("Set", execSet, WriteFirstKey, RollbackFirstKey, ArityNegativeTree, FlagWrite)
 	// setnx k v
 	RegisterCommandTest("Get", execGet, ReadFirstKey, nil, ArityTwo, FlagReadOnly)
-
-	if len(mockCmdTable) != 2 {
+	RegisterCommandTest("SetNX", execSet, WriteFirstKey, RollbackFirstKey, ArityNegativeTree, FlagWrite)
+	RegisterCommandTest("GexEx", execSet, WriteFirstKey, RollbackFirstKey, ArityNegativeTree, FlagWrite)
+	if len(mockCmdTable) != 4 {
 		t.Errorf("The length of mockCmdTable expected be 2, but %d got", len(mockCmdTable))
 	}
 }
 
-func TestSet(t *testing.T) {
+func TestStringSet(t *testing.T) {
 	RegisterCommandTest("Set", execSet, WriteFirstKey, RollbackFirstKey, ArityNegativeTree, FlagWrite)
 
 	cmdSet := make([][]byte, 0)
@@ -57,4 +60,21 @@ func TestSet(t *testing.T) {
 		t.Errorf("The value corresponding to the key Hello should be 111")
 	}
 
+}
+
+func TestStringSetNX(t *testing.T) {
+	key := utils.RandString(10)
+	value := utils.RandString(10)
+	mockDB.Exec(nil, utils.ToCmdLine("SETNX", key, value))
+	actual := mockDB.Exec(nil, utils.ToCmdLine("GET", key))
+	expected := protocol.MakeBulkReply([]byte(value))
+	if !utils.BytesEquals(actual.ToBytes(), expected.ToBytes()) {
+		t.Error("expected: " + string(expected.ToBytes()) + ", actual: " + string(actual.ToBytes()))
+	}
+
+	actual = mockDB.Exec(nil, utils.ToCmdLine("SETNX", key, value))
+	expected2 := protocol.MakeIntReply(int64(0))
+	if !utils.BytesEquals(actual.ToBytes(), expected2.ToBytes()) {
+		t.Error("expected: " + string(expected2.ToBytes()) + ", actual: " + string(actual.ToBytes()))
+	}
 }

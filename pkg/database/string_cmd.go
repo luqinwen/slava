@@ -15,7 +15,13 @@ import (
 	"slava/pkg/datastruct/bitmap"
 )
 
-// 这个包主要实现slava的string操作，比如Get、Set、Incr、Decr、StrLen、Append等操作
+// 设置一些常数
+//const unlimitedTTl int64 = 0
+//const (
+//	upsertPolicy = iota // default
+//	insertPolicy        // set nx
+//	updatePolicy        // set ex
+//)
 
 // Get 获取某个键的值
 func execGet(db *DB, args [][]byte) slava.Reply {
@@ -30,14 +36,6 @@ func execGet(db *DB, args [][]byte) slava.Reply {
 	}
 	return protocol.MakeBulkReply(bytes)
 }
-
-// 设置一些常数
-//const unlimitedTTl int64 = 0
-//const (
-//	upsertPolicy = iota // default
-//	insertPolicy        // set nx
-//	updatePolicy        // set ex
-//)
 
 // GetEX 获取某个键的值并且设置该键值的过期时间
 func execGetEX(db *DB, args [][]byte) slava.Reply {
@@ -374,7 +372,6 @@ func execMSetNX(db *DB, args [][]byte) slava.Reply {
 }
 
 // GetSet 以旧换新，设置一个key的新值，并且返回该ky的旧值
-
 func execGetSet(db *DB, args [][]byte) slava.Reply {
 	key := string(args[0])
 	value := args[1]
@@ -568,7 +565,6 @@ func execAppend(db *DB, args [][]byte) slava.Reply {
 }
 
 // SetRange 覆盖存储在key处的字符串的一部分，从指定的偏移量开始。如果偏移量大于键处字符串的当前长度，则字符串将填充零字节，填充完后再append。
-
 func execSetRange(db *DB, args [][]byte) slava.Reply {
 	key := string(args[0])
 	indexStr := string(args[1])
@@ -634,8 +630,7 @@ func execGetRange(db *DB, args [][]byte) slava.Reply {
 
 }
 
-// Setbit
-
+// SetBit
 func execSetBit(db *DB, args [][]byte) slava.Reply {
 	key := string(args[0])
 	offset, err := strconv.ParseInt(string(args[1]), 10, 64)
@@ -738,7 +733,6 @@ func execBitCount(db *DB, args [][]byte) slava.Reply {
 }
 
 // BitPos
-
 func execBitPos(db *DB, args [][]byte) slava.Reply {
 	key := string(args[0])                   // key值
 	bytes, errorReply := db.getAsString(key) // 取value
@@ -861,4 +855,5 @@ func init() {
 	RegisterCommand("BitCount", execBitCount, ReadFirstKey, nil, ArityNegativeTwo, FlagReadOnly)
 	// bitpos key v begin end
 	RegisterCommand("BitPos", execBitPos, ReadFirstKey, nil, ArityNegativeTree, FlagReadOnly)
+
 }
