@@ -521,14 +521,18 @@ func execDecrBy(db *db.DB, args [][]byte) slava.Reply {
 	if errReply != nil { // 找到key但是value不是string
 		return errReply
 	}
-	val, err := strconv.ParseInt(string(value), 10, 64)
-	if err != nil {
-		return protocol.MakeErrReply("ERR value is not an integer or out of range")
-	}
+	//val, err := strconv.ParseInt(string(value), 10, 64)
+	//if err != nil {
+	//	return protocol.MakeErrReply("ERR value is not an integer or out of range")
+	//}
 	if value == nil { // 没有找到key
 		db.PutEntity(key, &database.DataEntity{Data: []byte(strconv.FormatInt(-delta, 10))})
 		db.AddAof(utils.ToCmdLine3("decrBy", args...))
 		return protocol.MakeIntReply(-delta)
+	}
+	val, err := strconv.ParseInt(string(value), 10, 64)
+	if err != nil {
+		return protocol.MakeErrReply("ERR value is not an integer or out of range")
 	}
 	db.PutEntity(key, &database.DataEntity{Data: []byte(strconv.FormatInt(val-delta, 10))})
 	db.AddAof(utils.ToCmdLine3("decrBy", args...))
