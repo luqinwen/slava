@@ -10,7 +10,9 @@ import (
 	"slava/internal/interface/slava"
 	"slava/internal/protocol"
 	"slava/pkg/datastruct/dict"
+	"slava/pkg/datastruct/list"
 	"slava/pkg/datastruct/lock"
+	SortedSet "slava/pkg/datastruct/sortedset"
 	"slava/pkg/logger"
 	"slava/pkg/timewheel"
 )
@@ -46,8 +48,8 @@ type CmdLine = [][]byte
 // 该函数在ExecFunc前执行，负责分析命令行读写了哪些key便于进行加锁
 type PreFunc func(args [][]byte) ([]string, []string)
 
-//UndoFunc返回给定命令行的撤消日志，仅在事务中使用，负责undo logs以备事务执行过程中遇到错误需要回滚
-//撤消时从头到尾执行
+// UndoFunc返回给定命令行的撤消日志，仅在事务中使用，负责undo logs以备事务执行过程中遇到错误需要回滚
+// 撤消时从头到尾执行
 type UndoFunc func(db *DB, args [][]byte) []CmdLine
 
 // 初始化DB
@@ -285,7 +287,7 @@ func (db *DB) ForEach(cb func(key string, data *database.DataEntity, expiration 
 	})
 }
 
-func (db *DB) GetAsString(key string) ([]byte, protocol.ErrorReply) {
+func (db *DB) getAsString(key string) ([]byte, protocol.ErrorReply) {
 	entity, exists := db.GetEntity(key)
 	if !exists {
 		return nil, nil
@@ -295,6 +297,62 @@ func (db *DB) GetAsString(key string) ([]byte, protocol.ErrorReply) {
 		return nil, &protocol.WrongTypeErrReply{}
 	}
 	return bytes, nil
+}
+
+func (db *DB) getAsList(key string) (*list.List, protocol.ErrorReply) {
+	entity, exists := db.GetEntity(key)
+	if !exists {
+		return nil, nil
+	}
+	list, ok := entity.Data.(*list.List)
+	if !ok {
+		return nil, &protocol.WrongTypeErrReply{}
+	}
+	return list, nil
+}
+
+// 首先获取getList，如果list不为空，则返回；如果为空，则初始化一个list
+func (db *DB) getOrInitList(key string) (*list.List, bool, protocol.ErrorReply) {
+	getList, errReply := db.getAsList(key)
+	if errReply != nil {
+		return nil, false, errReply
+	}
+	isNew := false
+	if getList == nil {
+		getList = list.NewList()
+		db.PutEntity(key, &database.DataEntity{
+			Data: getList,
+		})
+	}
+	return getList, isNew, nil
+}
+
+func (db *DB) getAsSortedSet(key string) (*SortedSet.SortedSet, protocol.ErrorReply) {
+	entity, exists := db.GetEntity(key)
+	if !exists {
+		return nil, nil
+	}
+	sortedSet, ok := entity.Data.(*SortedSet.SortedSet)
+	if !ok {
+		return nil, &protocol.WrongTypeErrReply{}
+	}
+	return sortedSet, nil
+}
+
+func (db *DB) getOrInitSortedSet(key string) (sortedSet *SortedSet.SortedSet, inited bool, errReply protocol.ErrorReply) {
+	sortedSet, errReply = db.getAsSortedSet(key)
+	if errReply != nil {
+		return nil, false, errReply
+	}
+	inited = false
+	if sortedSet == nil {
+		sortedSet = SortedSet.Make()
+		db.PutEntity(key, &database.DataEntity{
+			Data: sortedSet,
+		})
+		inited = true
+	}
+	return sortedSet, inited, nil
 }
 
 /* ---- Lock Function ----- */

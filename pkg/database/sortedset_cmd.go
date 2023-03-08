@@ -4,40 +4,11 @@ import (
 	"strconv"
 	"strings"
 
-	"slava/internal/interface/database"
 	"slava/internal/interface/slava"
 	"slava/internal/protocol"
 	"slava/internal/utils"
 	SortedSet "slava/pkg/datastruct/sortedset"
 )
-
-func (db *DB) getAsSortedSet(key string) (*SortedSet.SortedSet, protocol.ErrorReply) {
-	entity, exists := db.GetEntity(key)
-	if !exists {
-		return nil, nil
-	}
-	sortedSet, ok := entity.Data.(*SortedSet.SortedSet)
-	if !ok {
-		return nil, &protocol.WrongTypeErrReply{}
-	}
-	return sortedSet, nil
-}
-
-func (db *DB) getOrInitSortedSet(key string) (sortedSet *SortedSet.SortedSet, inited bool, errReply protocol.ErrorReply) {
-	sortedSet, errReply = db.getAsSortedSet(key)
-	if errReply != nil {
-		return nil, false, errReply
-	}
-	inited = false
-	if sortedSet == nil {
-		sortedSet = SortedSet.Make()
-		db.PutEntity(key, &database.DataEntity{
-			Data: sortedSet,
-		})
-		inited = true
-	}
-	return sortedSet, inited, nil
-}
 
 // execZAdd adds member into sorted set
 func execZAdd(db *DB, args [][]byte) slava.Reply {

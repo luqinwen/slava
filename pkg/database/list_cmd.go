@@ -3,52 +3,10 @@ package database
 import (
 	"strconv"
 
-	"slava/internal/interface/database"
 	"slava/internal/interface/slava"
 	"slava/internal/protocol"
 	"slava/internal/utils"
-	"slava/pkg/datastruct/list"
 )
-
-func (db *DB) getAsList(key string) (*list.List, protocol.ErrorReply) {
-	entity, exists := db.GetEntity(key)
-	if !exists {
-		return nil, nil
-	}
-	list, ok := entity.Data.(*list.List)
-	if !ok {
-		return nil, &protocol.WrongTypeErrReply{}
-	}
-	return list, nil
-}
-
-// 首先获取getList，如果list不为空，则返回；如果为空，则初始化一个list
-func (db *DB) getOrInitList(key string) (*list.List, bool, protocol.ErrorReply) {
-	getList, errReply := db.getAsList(key)
-	if errReply != nil {
-		return nil, false, errReply
-	}
-	isNew := false
-	if getList == nil {
-		getList = list.NewList()
-		db.PutEntity(key, &database.DataEntity{
-			Data: getList,
-		})
-	}
-	return getList, isNew, nil
-}
-
-// ==========执行操作
-/*
-List的操作
-	Len()
-	RPush(value)
-	LPush(value)
-	Rpop()
-	Lpop()
-	GetByIndex(index)
-	Range(start, stop)
-*/
 
 // 获取链表长度
 func execListLen(db *DB, args [][]byte) slava.Reply {

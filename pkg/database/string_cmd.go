@@ -1,4 +1,4 @@
-package string
+package database
 
 import (
 	"math/bits"
@@ -12,16 +12,21 @@ import (
 	"slava/internal/interface/slava"
 	"slava/internal/protocol"
 	"slava/internal/utils"
-	db "slava/pkg/database"
 	"slava/pkg/datastruct/bitmap"
 )
 
-// 这个包主要实现slava的string操作，比如Get、Set、Incr、Decr、StrLen、Append等操作
+// 设置一些常数
+//const unlimitedTTl int64 = 0
+//const (
+//	upsertPolicy = iota // default
+//	insertPolicy        // set nx
+//	updatePolicy        // set ex
+//)
 
 // Get 获取某个键的值
-func execGet(db *db.DB, args [][]byte) slava.Reply {
+func execGet(db *DB, args [][]byte) slava.Reply {
 	key := string(args[0])
-	bytes, reply := db.GetAsString(key)
+	bytes, reply := db.getAsString(key)
 	if reply != nil {
 		return reply
 	}
@@ -32,18 +37,10 @@ func execGet(db *db.DB, args [][]byte) slava.Reply {
 	return protocol.MakeBulkReply(bytes)
 }
 
-// 设置一些常数
-//const unlimitedTTl int64 = 0
-//const (
-//	upsertPolicy = iota // default
-//	insertPolicy        // set nx
-//	updatePolicy        // set ex
-//)
-
 // GetEX 获取某个键的值并且设置该键值的过期时间
-func execGetEX(db *db.DB, args [][]byte) slava.Reply {
+func execGetEX(db *DB, args [][]byte) slava.Reply {
 	key := string(args[0])
-	bytes, err := db.GetAsString(key)
+	bytes, err := db.getAsString(key)
 	ttl := UnlimitedTTl
 	if err != nil {
 		return err
@@ -156,7 +153,7 @@ func execGetEX(db *db.DB, args [][]byte) slava.Reply {
 // NX或者XX可以和EX或者PX组合使用 SET key value EX 10 NX
 // EX 和 PX 可以同时出现，但后面给出的选项会覆盖前面给出的选项
 
-func execSet(db *db.DB, args [][]byte) slava.Reply {
+func execSet(db *DB, args [][]byte) slava.Reply {
 	key := string(args[0])
 	value := args[1]
 	policy := UpsertPolicy
@@ -238,8 +235,7 @@ func execSet(db *db.DB, args [][]byte) slava.Reply {
 }
 
 // SetNX 如果不存在则插入key value并且返回1，如果存在则返回0，
-
-func execSetNX(db *db.DB, args [][]byte) slava.Reply {
+func execSetNX(db *DB, args [][]byte) slava.Reply {
 	key := string(args[0])
 	value := args[1]
 	entity := &database.DataEntity{Data: value}
@@ -249,7 +245,7 @@ func execSetNX(db *db.DB, args [][]byte) slava.Reply {
 }
 
 // SetEX 添加键值并且附带过期时间（以秒位单位）
-func execSetEX(db *db.DB, args [][]byte) slava.Reply {
+func execSetEX(db *DB, args [][]byte) slava.Reply {
 	key := string(args[0])
 	value := args[2]
 	ttlArg, err := strconv.ParseInt(string(args[1]), 10, 64)
@@ -271,7 +267,7 @@ func execSetEX(db *db.DB, args [][]byte) slava.Reply {
 }
 
 // PSetEX 添加键值并且以毫秒的位单位添加过期时间
-func execPSetEX(db *db.DB, args [][]byte) slava.Reply {
+func execPSetEX(db *DB, args [][]byte) slava.Reply {
 	key := string(args[0])
 	value := args[2]
 	ttlArg, err := strconv.ParseInt(string(args[1]), 10, 64)
@@ -292,7 +288,6 @@ func execPSetEX(db *db.DB, args [][]byte) slava.Reply {
 }
 
 // MSet 一次设置多个k-v
-
 func prepareMSet(args [][]byte) ([]string, []string) {
 	size := len(args) / 2
 	keys := make([]string, size)
@@ -302,12 +297,12 @@ func prepareMSet(args [][]byte) ([]string, []string) {
 	return keys, nil
 }
 
-func undoMSet(d *db.DB, args [][]byte) []db.CmdLine {
+func undoMSet(d *DB, args [][]byte) []CmdLine {
 	weiteKeys, _ := prepareMSet(args)
-	return db.RollbackGivenKeys(d, weiteKeys...)
+	return RollbackGivenKeys(d, weiteKeys...)
 }
 
-func execMSet(db *db.DB, args [][]byte) slava.Reply {
+func execMSet(db *DB, args [][]byte) slava.Reply {
 	if len(args)%2 != 0 {
 		return protocol.MakeSyntaxErrReply()
 	}
@@ -328,12 +323,12 @@ func execMSet(db *db.DB, args [][]byte) slava.Reply {
 	return &protocol.OkReply{}
 }
 
-func execMGet(db *db.DB, args [][]byte) slava.Reply {
+func execMGet(db *DB, args [][]byte) slava.Reply {
 	keys := make([]string, len(args))
 	result := make([][]byte, len(args))
 	for i := 0; i < len(args); i++ {
 		keys[i] = string(args[i])
-		bytes, err := db.GetAsString(keys[i])
+		bytes, err := db.getAsString(keys[i])
 		if err != nil {
 			_, isWrongType := err.(*protocol.WrongTypeErrReply)
 			if isWrongType { // 类型断言成功
@@ -350,7 +345,7 @@ func execMGet(db *db.DB, args [][]byte) slava.Reply {
 }
 
 // MSetNX 只有当所有的key不存在的时候，设置多个k-v。
-func execMSetNX(db *db.DB, args [][]byte) slava.Reply {
+func execMSetNX(db *DB, args [][]byte) slava.Reply {
 	if len(args)%2 != 0 {
 		return protocol.MakeSyntaxErrReply()
 	}
@@ -377,12 +372,11 @@ func execMSetNX(db *db.DB, args [][]byte) slava.Reply {
 }
 
 // GetSet 以旧换新，设置一个key的新值，并且返回该ky的旧值
-
-func execGetSet(db *db.DB, args [][]byte) slava.Reply {
+func execGetSet(db *DB, args [][]byte) slava.Reply {
 	key := string(args[0])
 	value := args[1]
 	// 给定键值然后获取相应的value，返回的值是一个【】byte，和一个err
-	entity, err := db.GetAsString(key)
+	entity, err := db.getAsString(key)
 	if err != nil {
 		return err
 	}
@@ -397,9 +391,9 @@ func execGetSet(db *db.DB, args [][]byte) slava.Reply {
 }
 
 // GetDel 先获取key的value然后再删除该键
-func execGetDel(db *db.DB, args [][]byte) slava.Reply {
+func execGetDel(db *DB, args [][]byte) slava.Reply {
 	keys := string(args[0])
-	value, err := db.GetAsString(keys)
+	value, err := db.getAsString(keys)
 	if err != nil { // key存在，但是如果key的类型不是string则返回err
 		return err
 	}
@@ -413,9 +407,9 @@ func execGetDel(db *db.DB, args [][]byte) slava.Reply {
 }
 
 // Incr key所对应的value加一，如果不是value不是整数则失败
-func execIncr(db *db.DB, args [][]byte) slava.Reply {
+func execIncr(db *DB, args [][]byte) slava.Reply {
 	key := string(args[0])
-	value, err := db.GetAsString(key)
+	value, err := db.getAsString(key)
 	if err != nil { // key值存在但是value不是string类型
 		return err
 	}
@@ -435,7 +429,7 @@ func execIncr(db *db.DB, args [][]byte) slava.Reply {
 }
 
 // IncrBy key所对应的value加上给定的值，如果不是整数则失败
-func execIncrBy(db *db.DB, args [][]byte) slava.Reply {
+func execIncrBy(db *DB, args [][]byte) slava.Reply {
 	key := string(args[0])
 	rawDelta := string(args[1])
 	delta, err := strconv.ParseInt(rawDelta, 10, 64)
@@ -443,7 +437,7 @@ func execIncrBy(db *db.DB, args [][]byte) slava.Reply {
 		return protocol.MakeErrReply("ERR value is not an integer or out of range")
 	}
 	// 取key中对应的value
-	value, errorReply := db.GetAsString(key)
+	value, errorReply := db.getAsString(key)
 	if errorReply != nil { // key值存在但是value不是string类型
 		return errorReply
 	}
@@ -463,14 +457,14 @@ func execIncrBy(db *db.DB, args [][]byte) slava.Reply {
 }
 
 // IncrByFloat key所对应的value增加一个给定的浮点值
-func execIncrByFloat(db *db.DB, args [][]byte) slava.Reply {
+func execIncrByFloat(db *DB, args [][]byte) slava.Reply {
 	key := string(args[0])
 	rawDelta := string(args[1])
 	delta, err := decimal.NewFromString(rawDelta)
 	if err != nil {
 		return protocol.MakeErrReply("ERR value is not a valid float")
 	}
-	value, errReply := db.GetAsString(key)
+	value, errReply := db.getAsString(key)
 	if errReply != nil { // key的value不是string
 		return errReply
 	}
@@ -489,9 +483,9 @@ func execIncrByFloat(db *db.DB, args [][]byte) slava.Reply {
 }
 
 // Decr key所对应的value，减1
-func execDecr(db *db.DB, args [][]byte) slava.Reply {
+func execDecr(db *DB, args [][]byte) slava.Reply {
 	key := string(args[0])
-	value, errorReply := db.GetAsString(key)
+	value, errorReply := db.getAsString(key)
 	if errorReply != nil { // key值存在但是value的值不是string类型
 		return errorReply
 	}
@@ -510,14 +504,14 @@ func execDecr(db *db.DB, args [][]byte) slava.Reply {
 }
 
 // DecrBy key所对应的value减少给定的值
-func execDecrBy(db *db.DB, args [][]byte) slava.Reply {
+func execDecrBy(db *DB, args [][]byte) slava.Reply {
 	key := string(args[0])
 	rawDelta := string(args[1])
 	delta, err := strconv.ParseInt(rawDelta, 10, 64)
 	if err != nil {
 		return protocol.MakeErrReply("ERR value is not an integer or out of range")
 	}
-	value, errReply := db.GetAsString(key)
+	value, errReply := db.getAsString(key)
 	if errReply != nil { // 找到key但是value不是string
 		return errReply
 	}
@@ -540,9 +534,9 @@ func execDecrBy(db *db.DB, args [][]byte) slava.Reply {
 }
 
 // StrLen 返回key对应的value的长度
-func execStrLen(db *db.DB, args [][]byte) slava.Reply {
+func execStrLen(db *DB, args [][]byte) slava.Reply {
 	key := string(args[0])
-	value, errorReply := db.GetAsString(key)
+	value, errorReply := db.getAsString(key)
 	if errorReply != nil { // value不是字符串
 		return errorReply
 	}
@@ -553,10 +547,10 @@ func execStrLen(db *db.DB, args [][]byte) slava.Reply {
 }
 
 // Append key对应的value追加字符串
-func execAppend(db *db.DB, args [][]byte) slava.Reply {
+func execAppend(db *DB, args [][]byte) slava.Reply {
 	key := string(args[0])
 	appendValue := args[1]
-	bytes, err := db.GetAsString(key)
+	bytes, err := db.getAsString(key)
 	if err != nil {
 		return err
 	}
@@ -575,8 +569,7 @@ func execAppend(db *db.DB, args [][]byte) slava.Reply {
 }
 
 // SetRange 覆盖存储在key处的字符串的一部分，从指定的偏移量开始。如果偏移量大于键处字符串的当前长度，则字符串将填充零字节，填充完后再append。
-
-func execSetRange(db *db.DB, args [][]byte) slava.Reply {
+func execSetRange(db *DB, args [][]byte) slava.Reply {
 	key := string(args[0])
 	indexStr := string(args[1])
 	// 要添加的value
@@ -585,7 +578,7 @@ func execSetRange(db *db.DB, args [][]byte) slava.Reply {
 	if err != nil {
 		return protocol.MakeErrReply(err.Error())
 	}
-	value, errorReply := db.GetAsString(key)
+	value, errorReply := db.getAsString(key)
 	if errorReply != nil {
 		return errorReply
 	}
@@ -611,7 +604,7 @@ func execSetRange(db *db.DB, args [][]byte) slava.Reply {
 }
 
 // GetRange 获得key对应value的范围的值
-func execGetRange(db *db.DB, args [][]byte) slava.Reply {
+func execGetRange(db *DB, args [][]byte) slava.Reply {
 	key := string(args[0])
 	startIndexStr := string(args[1])
 	endIndexStr := string(args[2])
@@ -624,7 +617,7 @@ func execGetRange(db *db.DB, args [][]byte) slava.Reply {
 		return protocol.MakeErrReply("ERR value is not an integer or out of range")
 	}
 	// key不存在，不管start和end谁大谁小始终会返回空字符串
-	bytes, err := db.GetAsString(key)
+	bytes, err := db.getAsString(key)
 	if err != nil {
 		return err
 	}
@@ -641,9 +634,8 @@ func execGetRange(db *db.DB, args [][]byte) slava.Reply {
 
 }
 
-// Setbit
-
-func execSetBit(db *db.DB, args [][]byte) slava.Reply {
+// SetBit
+func execSetBit(db *DB, args [][]byte) slava.Reply {
 	key := string(args[0])
 	offset, err := strconv.ParseInt(string(args[1]), 10, 64)
 	if err != nil {
@@ -656,7 +648,7 @@ func execSetBit(db *db.DB, args [][]byte) slava.Reply {
 	} else if valStr != "0" {
 		return protocol.MakeErrReply("ERR bit is not an integer or out of range")
 	}
-	bytes, errorReply := db.GetAsString(key)
+	bytes, errorReply := db.getAsString(key)
 	if errorReply != nil {
 		return errorReply
 	}
@@ -668,13 +660,13 @@ func execSetBit(db *db.DB, args [][]byte) slava.Reply {
 }
 
 // GetBit
-func execGetBit(db *db.DB, args [][]byte) slava.Reply {
+func execGetBit(db *DB, args [][]byte) slava.Reply {
 	key := string(args[0])
 	offset, err := strconv.ParseInt(string(args[1]), 10, 64)
 	if err != nil {
 		return protocol.MakeErrReply("ERR bit offset is not an integer or out of range")
 	}
-	bytes, errorReply := db.GetAsString(key)
+	bytes, errorReply := db.getAsString(key)
 	if errorReply != nil {
 		return errorReply
 	}
@@ -683,9 +675,9 @@ func execGetBit(db *db.DB, args [][]byte) slava.Reply {
 }
 
 // BitCount
-func execBitCount(db *db.DB, args [][]byte) slava.Reply {
+func execBitCount(db *DB, args [][]byte) slava.Reply {
 	key := string(args[0])
-	bytes, errorReply := db.GetAsString(key)
+	bytes, errorReply := db.getAsString(key)
 	if errorReply != nil {
 		return errorReply
 	}
@@ -745,10 +737,9 @@ func execBitCount(db *db.DB, args [][]byte) slava.Reply {
 }
 
 // BitPos
-
-func execBitPos(db *db.DB, args [][]byte) slava.Reply {
+func execBitPos(db *DB, args [][]byte) slava.Reply {
 	key := string(args[0])                   // key值
-	bytes, errorReply := db.GetAsString(key) // 取value
+	bytes, errorReply := db.getAsString(key) // 取value
 	if errorReply != nil {
 		return errorReply
 	}
@@ -821,52 +812,52 @@ func execBitPos(db *db.DB, args [][]byte) slava.Reply {
 // init的方法，将上面的方法注册到cmdTable中
 func init() {
 	// set k v ex time|px time|xx|nx
-	db.RegisterCommand("Set", execSet, db.WriteFirstKey, db.RollbackFirstKey, ArityNegativeTree, FlagWrite)
+	RegisterCommand("Set", execSet, WriteFirstKey, RollbackFirstKey, ArityNegativeTree, FlagWrite)
 	// setnx k v
-	db.RegisterCommand("SetNX", execSetNX, db.WriteFirstKey, db.RollbackFirstKey, ArityTree, FlagWrite)
+	RegisterCommand("SetNX", execSetNX, WriteFirstKey, RollbackFirstKey, ArityTree, FlagWrite)
 	// setex k time v
-	db.RegisterCommand("SetEX", execSetEX, db.WriteFirstKey, db.RollbackFirstKey, ArityFour, FlagWrite)
+	RegisterCommand("SetEX", execSetEX, WriteFirstKey, RollbackFirstKey, ArityFour, FlagWrite)
 	// psetex k time v
-	db.RegisterCommand("PSetEX", execPSetEX, db.WriteFirstKey, db.RollbackFirstKey, ArityFour, FlagWrite)
+	RegisterCommand("PSetEX", execPSetEX, WriteFirstKey, RollbackFirstKey, ArityFour, FlagWrite)
 	// mset k1 v1 k2 v2 k3 v3 ...
-	db.RegisterCommand("MSet", execMSet, prepareMSet, undoMSet, ArityNegativeTree, FlagWrite)
+	RegisterCommand("MSet", execMSet, prepareMSet, undoMSet, ArityNegativeTree, FlagWrite)
 	// msetnx k1 v1 k2 v2 k3 v3 ...
-	db.RegisterCommand("MSetNX", execMSetNX, prepareMSet, undoMSet, ArityNegativeTree, FlagWrite)
+	RegisterCommand("MSetNX", execMSetNX, prepareMSet, undoMSet, ArityNegativeTree, FlagWrite)
 	//MGet k1 k2 k3 ...
-	db.RegisterCommand("MGet", execMGet, db.ReadAllKeys, nil, ArityNegativeTwo, FlagReadOnly)
+	RegisterCommand("MGet", execMGet, ReadAllKeys, nil, ArityNegativeTwo, FlagReadOnly)
 	// get k
-	db.RegisterCommand("Get", execGet, db.ReadFirstKey, nil, ArityTwo, FlagReadOnly)
+	RegisterCommand("Get", execGet, ReadFirstKey, nil, ArityTwo, FlagReadOnly)
 	// GETEX key [EX seconds | PX milliseconds | EXAT unix-time-seconds | PXAT unix-time-milliseconds | PERSIST]
-	db.RegisterCommand("GetEX", execGetEX, db.WriteFirstKey, db.RollbackFirstKey, ArityNegativeTree, FlagWrite)
+	RegisterCommand("GetEX", execGetEX, WriteFirstKey, RollbackFirstKey, ArityNegativeTree, FlagWrite)
 	// getset key value
-	db.RegisterCommand("GetSet", execGetSet, db.WriteFirstKey, db.RollbackFirstKey, ArityTree, FlagWrite)
+	RegisterCommand("GetSet", execGetSet, WriteFirstKey, RollbackFirstKey, ArityTree, FlagWrite)
 	// getdel key
-	db.RegisterCommand("GetDel", execGetDel, db.WriteFirstKey, db.RollbackFirstKey, ArityTwo, FlagWrite)
+	RegisterCommand("GetDel", execGetDel, WriteFirstKey, RollbackFirstKey, ArityTwo, FlagWrite)
 	// incr key
-	db.RegisterCommand("Incr", execIncr, db.WriteFirstKey, db.RollbackFirstKey, ArityTwo, FlagWrite)
+	RegisterCommand("Incr", execIncr, WriteFirstKey, RollbackFirstKey, ArityTwo, FlagWrite)
 	// incrby key int
-	db.RegisterCommand("IncrBy", execIncrBy, db.WriteFirstKey, db.RollbackFirstKey, ArityTree, FlagWrite)
+	RegisterCommand("IncrBy", execIncrBy, WriteFirstKey, RollbackFirstKey, ArityTree, FlagWrite)
 	// incrbyfloat ket float
-	db.RegisterCommand("IncrByFloat", execIncrByFloat, db.WriteFirstKey, db.RollbackFirstKey, ArityTree, FlagWrite)
+	RegisterCommand("IncrByFloat", execIncrByFloat, WriteFirstKey, RollbackFirstKey, ArityTree, FlagWrite)
 	// decr key
-	db.RegisterCommand("Decr", execDecr, db.WriteFirstKey, db.RollbackFirstKey, ArityTwo, FlagWrite)
+	RegisterCommand("Decr", execDecr, WriteFirstKey, RollbackFirstKey, ArityTwo, FlagWrite)
 	// decr key int
-	db.RegisterCommand("DecrBy", execDecrBy, db.WriteFirstKey, db.RollbackFirstKey, ArityTree, FlagWrite)
+	RegisterCommand("DecrBy", execDecrBy, WriteFirstKey, RollbackFirstKey, ArityTree, FlagWrite)
 	// strlen key
-	db.RegisterCommand("StrLen", execStrLen, db.ReadFirstKey, nil, ArityTwo, FlagReadOnly)
+	RegisterCommand("StrLen", execStrLen, ReadFirstKey, nil, ArityTwo, FlagReadOnly)
 	// apend key value
-	db.RegisterCommand("Append", execAppend, db.WriteFirstKey, db.RollbackFirstKey, ArityTree, FlagWrite)
+	RegisterCommand("Append", execAppend, WriteFirstKey, RollbackFirstKey, ArityTree, FlagWrite)
 	// setrange key offset value
-	db.RegisterCommand("SetRange", execSetRange, db.WriteFirstKey, db.RollbackFirstKey, ArityFour, FlagWrite)
+	RegisterCommand("SetRange", execSetRange, WriteFirstKey, RollbackFirstKey, ArityFour, FlagWrite)
 	// getrange key begin end
-	db.RegisterCommand("GetRange", execGetRange, db.ReadFirstKey, nil, ArityFour, FlagReadOnly)
+	RegisterCommand("GetRange", execGetRange, ReadFirstKey, nil, ArityFour, FlagReadOnly)
 	// setbit key offset v
-	db.RegisterCommand("SetBit", execSetBit, db.WriteFirstKey, db.RollbackFirstKey, ArityFour, FlagWrite)
+	RegisterCommand("SetBit", execSetBit, WriteFirstKey, RollbackFirstKey, ArityFour, FlagWrite)
 	// getbit key offset
-	db.RegisterCommand("GetBit", execGetBit, db.ReadFirstKey, nil, ArityTree, FlagReadOnly)
+	RegisterCommand("GetBit", execGetBit, ReadFirstKey, nil, ArityTree, FlagReadOnly)
 	// bitcount key (begin end)
-	db.RegisterCommand("BitCount", execBitCount, db.ReadFirstKey, nil, ArityNegativeTwo, FlagReadOnly)
+	RegisterCommand("BitCount", execBitCount, ReadFirstKey, nil, ArityNegativeTwo, FlagReadOnly)
 	// bitpos key v begin end
-	db.RegisterCommand("BitPos", execBitPos, db.ReadFirstKey, nil, ArityNegativeTree, FlagReadOnly)
+	RegisterCommand("BitPos", execBitPos, ReadFirstKey, nil, ArityNegativeTree, FlagReadOnly)
 
 }
