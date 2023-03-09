@@ -1,15 +1,15 @@
-package string
+package database
 
 import (
 	"reflect"
+	"testing"
+
 	"slava/internal/protocol"
 	"slava/internal/utils"
-	db "slava/pkg/database"
-	"testing"
 )
 
 func TestExecGet(t *testing.T) {
-	testDB := db.MakeDB()
+	testDB := MakeDB()
 	testData := make([][]byte, 2)
 	testData[0] = []byte("Hello")
 	testData[1] = []byte("World")
@@ -24,7 +24,7 @@ func TestExecGet(t *testing.T) {
 }
 
 func TestExecGetEX(t *testing.T) {
-	testDB := db.MakeDB()
+	testDB := MakeDB()
 	testData := make([][]byte, 2)
 	testData[0] = []byte("Hello")
 	testData[1] = []byte("World")
@@ -45,7 +45,7 @@ func TestExecGetEX(t *testing.T) {
 }
 
 func TestExecSetNX(t *testing.T) {
-	testDB := db.MakeDB()
+	testDB := MakeDB()
 	testData1 := make([][]byte, 2)
 	testData1[0] = []byte("Hello")
 	testData1[1] = []byte("World")
@@ -65,7 +65,7 @@ func TestExecSetNX(t *testing.T) {
 }
 
 func TestExecSetEX(t *testing.T) {
-	testDB := db.MakeDB()
+	testDB := MakeDB()
 	testData := make([][]byte, 3)
 	testData[0] = []byte("Hello")
 	testData[1] = []byte("60")
@@ -86,7 +86,7 @@ func TestExecSetEX(t *testing.T) {
 }
 
 func TestExecPSetEX(t *testing.T) {
-	testDB := db.MakeDB()
+	testDB := MakeDB()
 	testData := make([][]byte, 3)
 	testData[0] = []byte("Hello")
 	testData[1] = []byte("6000")
@@ -121,7 +121,7 @@ func TestPrepareMSet(t *testing.T) {
 }
 
 func TestExecMSet(t *testing.T) {
-	testDB := db.MakeDB()
+	testDB := MakeDB()
 	testData := make([][]byte, 4)
 	testData[0] = []byte("Hello")
 	testData[1] = []byte("World")
@@ -145,7 +145,7 @@ func TestExecMSet(t *testing.T) {
 }
 
 func TestExecMGet(t *testing.T) {
-	testDB := db.MakeDB()
+	testDB := MakeDB()
 	testData := make([][]byte, 4)
 	testData[0] = []byte("Hello")
 	testData[1] = []byte("World")
@@ -167,7 +167,7 @@ func TestExecMGet(t *testing.T) {
 }
 
 func TestExecMSetNX(t *testing.T) {
-	testDB := db.MakeDB()
+	testDB := MakeDB()
 	testData := make([][]byte, 2)
 	testData[0] = []byte("Hello")
 	testData[1] = []byte("World")
@@ -195,7 +195,7 @@ func TestExecMSetNX(t *testing.T) {
 }
 
 func TestExecGetSet(t *testing.T) {
-	testDB := db.MakeDB()
+	testDB := MakeDB()
 	testData := make([][]byte, 2)
 	testData[0] = []byte("Hello")
 	testData[1] = []byte("World")
@@ -215,7 +215,7 @@ func TestExecGetSet(t *testing.T) {
 }
 
 func TestExecGetDel(t *testing.T) {
-	testDB := db.MakeDB()
+	testDB := MakeDB()
 	testData := make([][]byte, 2)
 	testData[0] = []byte("Hello")
 	testData[1] = []byte("World")
@@ -234,7 +234,7 @@ func TestExecGetDel(t *testing.T) {
 }
 
 func TestExecIncr(t *testing.T) {
-	testDB := db.MakeDB()
+	testDB := MakeDB()
 	testData := make([][]byte, 4)
 	testData[0] = []byte("K1")
 	testData[1] = []byte("1")
@@ -262,7 +262,7 @@ func TestExecIncr(t *testing.T) {
 }
 
 func TestExecIncrBy(t *testing.T) {
-	testDB := db.MakeDB()
+	testDB := MakeDB()
 	testData := make([][]byte, 4)
 	testData[0] = []byte("K1")
 	testData[1] = []byte("1")
@@ -293,7 +293,7 @@ func TestExecIncrBy(t *testing.T) {
 }
 
 func TestExecIncrByFloat(t *testing.T) {
-	testDB := db.MakeDB()
+	testDB := MakeDB()
 	testData := make([][]byte, 4)
 	testData[0] = []byte("K1")
 	testData[1] = []byte("1")
@@ -326,7 +326,7 @@ func TestExecIncrByFloat(t *testing.T) {
 }
 
 func TestExecDecr(t *testing.T) {
-	testDB := db.MakeDB()
+	testDB := MakeDB()
 	testData := make([][]byte, 4)
 	testData[0] = []byte("K1")
 	testData[1] = []byte("1")
@@ -354,7 +354,7 @@ func TestExecDecr(t *testing.T) {
 }
 
 func TestExecDecrBy(t *testing.T) {
-	testDB := db.MakeDB()
+	testDB := MakeDB()
 	testData := make([][]byte, 4)
 	testData[0] = []byte("K1")
 	testData[1] = []byte("1")
@@ -385,7 +385,7 @@ func TestExecDecrBy(t *testing.T) {
 }
 
 func TestExecStrLen(t *testing.T) {
-	testDB := db.MakeDB()
+	testDB := MakeDB()
 	testData := make([][]byte, 2)
 	testData[0] = []byte("Hello")
 	testData[1] = []byte("World")
@@ -405,7 +405,7 @@ func TestExecStrLen(t *testing.T) {
 }
 
 func TestExecAppend(t *testing.T) {
-	testDB := db.MakeDB()
+	testDB := MakeDB()
 	testData := make([][]byte, 2)
 	testData[0] = []byte("Hello")
 	testData[1] = []byte("World")
@@ -424,7 +424,7 @@ func TestExecAppend(t *testing.T) {
 }
 
 func TestExecSetRange(t *testing.T) {
-	testDB := db.MakeDB()
+	testDB := MakeDB()
 	testData := make([][]byte, 2)
 	testData[0] = []byte("Hello")
 	testData[1] = []byte("World")
@@ -444,7 +444,7 @@ func TestExecSetRange(t *testing.T) {
 }
 
 func TestExEcGetRange(t *testing.T) {
-	testDB := db.MakeDB()
+	testDB := MakeDB()
 	testData := make([][]byte, 2)
 	testData[0] = []byte("Hello")
 	testData[1] = []byte("World")
