@@ -8,13 +8,10 @@ import (
 	"testing"
 )
 
-var (
-	hub      = MakeHub()
-	client   = connection.NewFakeConn()
-	channels = [][]byte{[]byte("test1"), []byte("test2")}
-)
-
 func TestSubscribe(t *testing.T) {
+	hub := MakeHub()
+	client := connection.NewFakeConn()
+	channels := [][]byte{[]byte("test1"), []byte("test2")}
 	Subscribe(hub, client, channels)
 	if !reflect.DeepEqual(client.GetChannels(), []string{"test1", "test2"}) {
 		t.Error("Don't subscribe the correct channels")
@@ -32,6 +29,9 @@ func TestSubscribe(t *testing.T) {
 }
 
 func TestUnSubscribe(t *testing.T) {
+	hub := MakeHub()
+	client := connection.NewFakeConn()
+	channels := [][]byte{[]byte("test1"), []byte("test2")}
 	Subscribe(hub, client, channels)
 	UnSubscribe(hub, client, [][]byte{[]byte("test1")})
 	if !reflect.DeepEqual(client.GetChannels(), []string{"test2"}) {
@@ -40,6 +40,9 @@ func TestUnSubscribe(t *testing.T) {
 }
 
 func TestUnsubscribeAll(t *testing.T) {
+	hub := MakeHub()
+	client := connection.NewFakeConn()
+	channels := [][]byte{[]byte("test1"), []byte("test2")}
 	Subscribe(hub, client, channels)
 	UnsubscribeAll(hub, client)
 	if !reflect.DeepEqual(client.GetChannels(), []string{}) {
@@ -48,6 +51,9 @@ func TestUnsubscribeAll(t *testing.T) {
 }
 
 func TestPublish(t *testing.T) {
+	hub := MakeHub()
+	client := connection.NewFakeConn()
+	channels := [][]byte{[]byte("test1"), []byte("test2")}
 	Subscribe(hub, client, channels)
 	arg1 := []byte("test1")
 	arg2 := []byte("msg")
