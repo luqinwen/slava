@@ -15,7 +15,7 @@ var Banner = `
 `
 
 var DefaultProperties = &config.ServerProperties{
-	Bind:           "127.0.0.1",
+	Bind:           "0.0.0.0",
 	Port:           6399,
 	AppendOnly:     false,
 	AppendFilename: "",
